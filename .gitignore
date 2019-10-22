@@ -1,0 +1,8 @@
+
+# C smart contracts 
+*.wasm
+*.ll
+*.o
+
+# Rust smart contracts
+*/target/
