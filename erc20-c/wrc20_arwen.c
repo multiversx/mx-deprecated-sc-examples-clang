@@ -9,7 +9,7 @@ typedef unsigned long long uint64_t;
 // types used for Ethereum stuff
 typedef uint8_t* bytes; // an array of bytes with unrestricted length
 typedef uint8_t bytes32[32]; // an array of 32 bytes
-typedef uint8_t address[32]; // an array of 20 bytes
+typedef uint8_t address[32]; // an array of 32 bytes
 typedef unsigned __int128 u128; // a 128 bit number, represented as a 16 bytes long little endian unsigned integer in memory
 //typedef uint256_t u256; // a 256 bit number, represented as a 32 bytes long little endian unsigned integer in memory
 typedef uint32_t i32; // same as i32 in WebAssembly
@@ -17,101 +17,100 @@ typedef uint32_t i32ptr; // same as i32 in WebAssembly, but treated as a pointer
 typedef uint64_t i64; // same as i64 in WebAssembly
 
 // functions for ethereum stuff
-void getCaller(i32ptr* resultOffset);
-int32_t getArgument(i32 id, i32ptr* argOffset);
+void getOwner(i32ptr* resultOffset);
+void loadBalance(i32ptr* addressOffset, int32_t result);
+int32_t blockHash(long long nonce, i32ptr* resultOffset);
+int32_t loadArgumentAsBytes(int32_t id, i32ptr* argOffset);
+void loadArgumentAsBig(int32_t id, int32_t destination);
+long long getArgumentAsInt64(int32_t id);
+int32_t getFunction(i32ptr* functionOffset);
 int32_t getNumArguments();
-void signalError();
-void finish(i32ptr* dataOffset, i32 dataLength);
-i32 storageStore(i32ptr* pathOffset, i32ptr* resultOffset, i32 dataLength);
-i32 storageLoad(i32ptr* pathOffset, i32ptr* resultOffset);
+int32_t storageStore(i32ptr* keyOffset, i32ptr* dataOffset, int32_t dataLength);
+int32_t storageLoad(i32ptr* keyOffset, i32ptr* dataOffset);
+int32_t storageStoreAsBigInt(i32ptr* keyOffset, int32_t source);
+int32_t storageLoadAsBigInt(i32ptr* keyOffset, int32_t destination);
+int32_t storageStoreAsInt64(i32ptr* keyOffset, long long value);
 long long storageLoadAsInt64(i32ptr* keyOffset);
-i32 storageStoreAsInt64(i32ptr* keyOffset, long long value);
-i32 getCallValue(i32ptr* resultOffset);
-uint64_t getArgumentAsInt64(i32 id);
-   //the memory offset to load the path from (bytes32), the memory offset to store/load the result at (bytes32)
+void getCaller(i32ptr* resultOffset);
+int32_t getCallValue(i32ptr* resultOffset);
+long long getCallValueAsInt64();
+void logMessage(int32_t pointer, int32_t length);
+void writeLog(int32_t pointer, int32_t length, int32_t topicPtr, int32_t numTopics);
+long long getBlockTimestamp();
+void signalError();
+int32_t bigInsert(int32_t smallValue);
+int32_t bigByteLength(int32_t reference);
+int32_t bigGetBytes(int32_t reference);
+void bigSetBytes(int32_t destination, int32_t byteOffset, int32_t byteLength);
+void bigAdd(int32_t destination, int32_t op1, int32_t op2);
+void bigSub(int32_t destination, int32_t op1, int32_t op2);
+void bigMul(int32_t destination, int32_t op1, int32_t op2);
+int32_t bigCmp(int32_t op1, int32_t op2);
+void returnBigInt(int32_t reference);
+void returnInt32(int32_t value);
+void debugPrintBig(int32_t value);
+void debugPrintInt32(int32_t value);
 
 
-i64 reverse_bytes(i64 a){
-  i64 b = 0;
-  b += (a & 0xff00000000000000)>>56;
-  b += (a & 0x00ff000000000000)>>40;
-  b += (a & 0x0000ff0000000000)>>24;
-  b += (a & 0x000000ff00000000)>>8;
-  b += (a & 0x00000000ff000000)<<8;
-  b += (a & 0x0000000000ff0000)<<24;
-  b += (a & 0x000000000000ff00)<<40;
-  b += (a & 0x00000000000000ff)<<56;
-  return b;
-}
-
-
-// global data used in next function, will be allocated to WebAssembly memory
-bytes32 addy[1] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-bytes32 balance[1] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-
-void do_balance() {
-  if (getNumArguments() < 1)
-    signalError();
-
-  // get address to check balance of, note: padded to 32 bytes since used as key
-  getArgument(0, (i32ptr*)addy);
-
-  // get balance
-  storageLoad((i32ptr*)addy, (i32ptr*)balance);
-  // return balance
-  finish((i32ptr*)balance, 8);
-}
 
 // global data used in next function, will be allocated to WebAssembly memory
 bytes32 sender[1] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 bytes32 recipient[1] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-bytes32 value[1] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-bytes32 recipient_balance[1] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-bytes32 sender_balance[1] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+
+void init() {
+  if (getNumArguments() != 1) {
+    signalError();
+    return;
+  }
+
+  getCaller((i32ptr*)sender);
+  int32_t totalAmount = bigInsert(0);
+  loadArgumentAsBig(totalAmount, 0);
+
+  storageStoreAsBigInt((i32ptr*)sender, totalAmount);
+}
+
+void do_balance() {
+  if (getNumArguments() != 0) {
+    signalError();
+    return;
+  }
+
+  int32_t balance = bigInsert(0);
+  storageLoadAsBigInt((i32ptr*)sender, balance);
+
+  returnBigInt(balance);
+}
 
 void transfer() {
-  if (getNumArguments() < 2)
+  if (getNumArguments() != 2) {
     signalError();
+    return;
+  }
 
-  // get caller
   getCaller((i32ptr*)sender);
+  loadArgumentAsBytes(0, (i32ptr*)recipient);
+  int32_t amount = bigInsert(0);
+  loadArgumentAsBig(amount, 1);
 
-  getArgument(0, (i32ptr*)recipient);
-  getArgument(1, (i32ptr*)value);
+  int32_t senderBalance = bigInsert(0);
+  storageLoadAsBigInt((i32ptr*)sender, senderBalance);
 
-  // get balances
-  storageLoad((i32ptr*)sender, (i32ptr*)sender_balance);
-  storageLoad((i32ptr*)recipient, (i32ptr*)recipient_balance);
-  *(i64*)sender_balance = reverse_bytes(*(i64*)sender_balance);
-  *(i64*)recipient_balance = reverse_bytes(*(i64*)recipient_balance);
-  // make sure sender has enough
-  if (*(i64*)sender_balance < *(i64*)value)
+  if (bigCmp(amount, senderBalance) > 0) {
     signalError();
+    return;
+  }
 
-  // adjust balances
-  * (i64*)sender_balance -= * (i64*)value;
-  * (i64*)recipient_balance += * (i64*)value;
+  bigSub(senderBalance, senderBalance, amount);
+  storageStoreAsBigInt((i32ptr*)sender, senderBalance);
 
-  *(i64*)sender_balance = reverse_bytes(*(i64*)sender_balance);
-  *(i64*)recipient_balance = reverse_bytes(*(i64*)recipient_balance);
-  storageStore((i32ptr*)sender, (i32ptr*)sender_balance, 8);
-  storageStore((i32ptr*)recipient, (i32ptr*)recipient_balance, 8);
+  int32_t receiverBalance = bigInsert(0);
+  storageLoadAsBigInt((i32ptr*)recipient, receiverBalance);
+  bigAdd(receiverBalance, receiverBalance, amount);
+  storageStoreAsBigInt((i32ptr*)recipient, receiverBalance);
 }
 
 void topUp() {
-  // getPlayer
-  getCaller((i32ptr*)sender);
-  // getJoinValue
-  getCallValue((i32ptr*)value);
-
-  // get balances
-  storageLoad((i32ptr*)sender, (i32ptr*)sender_balance);
-  *(i64*)sender_balance = reverse_bytes(*(i64*)sender_balance);
-
-  // adjust balances
-  *(i64*)sender_balance += * (i64*)value;
-  *(i64*)sender_balance = reverse_bytes(*(i64*)sender_balance);
-  storageStore((i32ptr*)sender, (i32ptr*)sender_balance, 8);
 }
 
 // global data used in next function, will be allocated to WebAssembly memory
