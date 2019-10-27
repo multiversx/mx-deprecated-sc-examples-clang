@@ -16,7 +16,7 @@ typedef uint32_t i32; // same as i32 in WebAssembly
 typedef uint32_t i32ptr; // same as i32 in WebAssembly, but treated as a pointer to a WebAssembly memory offset
 typedef uint64_t i64; // same as i64 in WebAssembly
 
-// functions for ethereum stuff
+// elrond api functions
 int32_t loadFunctionName(i32ptr* functionOffset);
 int32_t getNumArguments();
 void loadArgumentAsBigInt(int32_t id, int32_t destination);
