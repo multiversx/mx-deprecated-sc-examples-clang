@@ -27,6 +27,7 @@ void loadOwner(i32ptr* resultOffset);
 void loadCaller(i32ptr* resultOffset);
 void loadCallValue(int32_t destination);
 void loadBalance(i32ptr* addressOffset, int32_t result);
+long long getGasLeft();
 int32_t loadBlockHash(long long nonce, i32ptr* resultOffset);
 long long getBlockTimestamp();
 
@@ -109,8 +110,7 @@ void topUp() {
   storageLoadAsBytes((i32ptr*)zero_key[0], (i32ptr*)addr[0]);
   debugPrintBytes((i32ptr*)addr[0], 32);
 
-  int amount = bigIntNew(3);
-  sendTransaction(10000, (i32ptr*)addr[0], amount, (i32ptr*)addr[0], 2);
+  sendTransaction(getGasLeft(), (i32ptr*)addr[0], bigIntNew(3), (i32ptr*)addr[0], 2);
 
   long long i = bigIntGetInt64(bi);
   returnInt32((int32_t)i);

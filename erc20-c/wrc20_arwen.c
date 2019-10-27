@@ -27,6 +27,7 @@ void loadOwner(i32ptr* resultOffset);
 void loadCaller(i32ptr* resultOffset);
 void loadCallValue(int32_t destination);
 void loadBalance(i32ptr* addressOffset, int32_t result);
+long long getGasLeft();
 int32_t loadBlockHash(long long nonce, i32ptr* resultOffset);
 long long getBlockTimestamp();
 
