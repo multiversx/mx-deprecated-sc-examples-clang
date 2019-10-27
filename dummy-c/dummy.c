@@ -17,87 +17,103 @@ typedef uint32_t i32ptr; // same as i32 in WebAssembly, but treated as a pointer
 typedef uint64_t i64; // same as i64 in WebAssembly
 
 // functions for ethereum stuff
-void getOwner(int32_t resultOffset);
-void loadBalance(int32_t addressOffset, int32_t result);
-int32_t blockHash(long long nonce, int32_t resultOffset);
-int32_t loadArgumentAsBytes(int32_t id, int32_t argOffset);
-void loadArgumentAsBig(int32_t id, int32_t destination);
-long long getArgumentAsInt64(int32_t id);
-int32_t getFunction(int32_t functionOffset);
+int32_t loadFunctionName(i32ptr* functionOffset);
 int32_t getNumArguments();
-int32_t storageStore(int32_t keyOffset, int32_t dataOffset, int32_t dataLength);
-int32_t storageLoad(int32_t keyOffset, int32_t dataOffset);
-int32_t storageStoreAsBigInt(int32_t keyOffset, int32_t source);
-int32_t storageLoadAsBigInt(int32_t keyOffset, int32_t destination);
-int32_t storageStoreAsInt64(int32_t keyOffset, long long value);
-long long storageLoadAsInt64(int32_t keyOffset);
-void getCaller(int32_t resultOffset);
-int32_t getCallValue(int32_t resultOffset);
-long long getCallValueAsInt64();
-void logMessage(int32_t pointer, int32_t length);
-void writeLog(int32_t pointer, int32_t length, int32_t topicPtr, int32_t numTopics);
-void finish(int32_t dataOffset, int32_t length);
+void loadArgumentAsBigInt(int32_t id, int32_t destination);
+int32_t loadArgumentAsBytes(int32_t id, i32ptr* argOffset);
+long long getArgumentAsInt64(int32_t id);
+
+void loadOwner(i32ptr* resultOffset);
+void loadCaller(i32ptr* resultOffset);
+void loadCallValue(int32_t destination);
+void loadBalance(i32ptr* addressOffset, int32_t result);
+int32_t loadBlockHash(long long nonce, i32ptr* resultOffset);
 long long getBlockTimestamp();
-void signalError();
-int32_t bigInsert(int32_t smallValue);
-int32_t bigByteLength(int32_t reference);
-int32_t bigGetBytes(int32_t reference);
-void bigSetBytes(int32_t destination, int32_t byteOffset, int32_t byteLength);
-void bigAdd(int32_t destination, int32_t op1, int32_t op2);
-void bigSub(int32_t destination, int32_t op1, int32_t op2);
-void bigMul(int32_t destination, int32_t op1, int32_t op2);
-int32_t bigCmp(int32_t op1, int32_t op2);
+
+int32_t sendTransaction(long long gasLimit, int32_t dstOffset, int32_t valueRef, int32_t dataOffset, int32_t dataLength);
+
+int32_t storageStoreAsBytes(i32ptr* keyOffset, i32ptr* dataOffset, int32_t dataLength);
+int32_t storageLoadAsBytes(i32ptr* keyOffset, i32ptr* dataOffset);
+int32_t storageStoreAsBigInt(i32ptr* keyOffset, int32_t source);
+int32_t storageLoadAsBigInt(i32ptr* keyOffset, int32_t destination);
+int32_t storageStoreAsInt64(i32ptr* keyOffset, long long value);
+long long storageLoadAsInt64(i32ptr* keyOffset);
+
 void returnBigInt(int32_t reference);
 void returnInt32(int32_t value);
-void debugPrintBig(int32_t value);
-void debugPrintInt32(int32_t value);
+void writeLog(int32_t pointer, int32_t length, int32_t topicPtr, int32_t numTopics);
+void signalError();
 
+int32_t bigIntNew(int32_t smallValue);
+int32_t bigIntByteLength(int32_t reference);
+int32_t bigIntGetBytes(int32_t reference, i32ptr* byteOffset);
+void bigIntSetBytes(int32_t destination, i32ptr* byteOffset, int32_t byteLength);
+int32_t bigIntIsInt64(int32_t reference);
+long long bigIntGetInt64(int32_t reference);
+void bigIntSetInt64(int32_t destination, long long value);
+void bigIntAdd(int32_t destination, int32_t op1, int32_t op2);
+void bigIntSub(int32_t destination, int32_t op1, int32_t op2);
+void bigIntMul(int32_t destination, int32_t op1, int32_t op2);
+int32_t bigIntCmp(int32_t op1, int32_t op2);
+
+void logMessage(i32ptr* pointer, int32_t length);
+void debugPrintBigInt(int32_t value);
+void debugPrintInt32(int32_t value);
+void debugPrintBytes(i32ptr* byteOffset, int32_t byteLength);
+void debugPrintString(i32ptr* byteOffset, int32_t byteLength);
 
 
 // global data used in next function, will be allocated to WebAssembly memory
+bytes32 zero_key[1] = {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 bytes32 addr[1] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
 bytes32 some_bytes[1] = {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
 void init() {
-  getOwner((i32ptr*)addr);
-  int bi = bigInsert(257);
+  loadOwner((i32ptr*)addr);
+  int bi = bigIntNew(257);
   storageStoreAsBigInt((i32ptr*)addr, bi);
 
-  bigSetBytes(bi, (i32ptr*)some_bytes, (int32_t)7);
-  debugPrintBig(bi);
+  loadCaller((i32ptr*)addr);
+  storageStoreAsBytes((i32ptr*)zero_key[0], (i32ptr*)addr[0], 32);
 
-  bigSub(bi, bi, bigInsert(2));
-  debugPrintBig(bi);
-  int32_t bi_length = bigByteLength(bi);
+  bigIntSetBytes(bi, (i32ptr*)some_bytes[0], (int32_t)7);
+  debugPrintBigInt(bi);
+
+  bigIntSub(bi, bi, bigIntNew(2));
+  debugPrintBigInt(bi);
+  int32_t bi_length = bigIntByteLength(bi);
   debugPrintInt32(bi_length);
 
-  int32_t newMem = bigGetBytes(bi);
-  debugPrintInt32(newMem);
-  newMem = bigGetBytes(bi);
-  debugPrintInt32(newMem);
+  int32_t len = bigIntGetBytes(bi, (i32ptr*)some_bytes[0]);
+  debugPrintInt32(len);
+  debugPrintBytes((i32ptr*)some_bytes[0], len);
 
-  bigSetBytes(bi, newMem-6, (int32_t)6);
-  debugPrintBig(bi);
-
-  bigMul(bi, bi, bigInsert(100));
+  loadCallValue(bi);
   returnBigInt(bi);
 }
 
 void topUp() {
-  int bi = bigInsert(17);
-  loadArgumentAsBig(0, bi);
-  debugPrintBig(bi);
-  loadArgumentAsBig(1, bi);
-  debugPrintBig(bi);
-  loadArgumentAsBig(2, bi);
-  debugPrintBig(bi);
-  getOwner((i32ptr*)addr);
+  int bi = bigIntNew(17);
+  loadArgumentAsBigInt(0, bi);
+  debugPrintBigInt(bi);
+  loadArgumentAsBigInt(1, bi);
+  debugPrintBigInt(bi);
+  loadArgumentAsBigInt(2, bi);
+  debugPrintBigInt(bi);
+  loadOwner((i32ptr*)addr);
   loadBalance((i32ptr*)addr, bi);
   storageLoadAsBigInt((i32ptr*)addr, bi);
-  debugPrintBig(bi);
+  debugPrintBigInt(bi);
 
-  returnInt32(73);
+  storageLoadAsBytes((i32ptr*)zero_key[0], (i32ptr*)addr[0]);
+  debugPrintBytes((i32ptr*)addr[0], 32);
+
+  int amount = bigIntNew(3);
+  sendTransaction(10000, (i32ptr*)addr[0], amount, (i32ptr*)addr[0], 2);
+
+  long long i = bigIntGetInt64(bi);
+  returnInt32((int32_t)i);
 }
 
 void do_balance() {
