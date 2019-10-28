@@ -31,7 +31,7 @@ long long getGasLeft();
 int32_t loadBlockHash(long long nonce, i32ptr* resultOffset);
 long long getBlockTimestamp();
 
-int32_t sendTransaction(long long gasLimit, int32_t dstOffset, int32_t valueRef, int32_t dataOffset, int32_t dataLength);
+int32_t sendTransaction(long long gasLimit, i32ptr* dstOffset, int32_t valueRef, i32ptr* dataOffset, int32_t dataLength);
 
 int32_t storageStoreAsBytes(i32ptr* keyOffset, i32ptr* dataOffset, int32_t dataLength);
 int32_t storageLoadAsBytes(i32ptr* keyOffset, i32ptr* dataOffset);
@@ -122,9 +122,6 @@ void transfer() {
   storageLoadAsBigInt((i32ptr*)recipient, receiverBalance);
   bigIntAdd(receiverBalance, receiverBalance, amount);
   storageStoreAsBigInt((i32ptr*)recipient, receiverBalance);
-}
-
-void topUp() {
 }
 
 // global data used in next function, will be allocated to WebAssembly memory
