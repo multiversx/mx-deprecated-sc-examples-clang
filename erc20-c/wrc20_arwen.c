@@ -17,33 +17,27 @@ typedef uint32_t i32ptr; // same as i32 in WebAssembly, but treated as a pointer
 typedef uint64_t i64; // same as i64 in WebAssembly
 
 // elrond api functions
-int32_t loadFunctionName(i32ptr* functionOffset);
+void getOwner(i32ptr* resultOffset);
+void getExternalBalance(i32ptr* addressOffset, i32ptr* resultOffset);
+int32_t getBlockHash(long long nonce, i32ptr* resultOffset);
+int32_t transfer(long long gasLimit, i32ptr* dstOffset, i32ptr* sndOffset, i32ptr* valueOffset, i32ptr* dataOffset, int32_t length);
+int32_t getArgument(int32_t id, i32ptr* argOffset);
+int32_t getFunction(i32ptr* functionOffset);
 int32_t getNumArguments();
-void loadArgumentAsBigInt(int32_t id, int32_t destination);
-int32_t loadArgumentAsBytes(int32_t id, i32ptr* argOffset);
-long long getArgumentAsInt64(int32_t id);
-
-void loadOwner(i32ptr* resultOffset);
-void loadCaller(i32ptr* resultOffset);
-void loadCallValue(int32_t destination);
-void loadBalance(i32ptr* addressOffset, int32_t result);
+int32_t storageStore(i32ptr* keyOffset, i32ptr* dataOffset, int32_t dataLength);
+int32_t storageLoad(i32ptr* keyOffset, i32ptr* dataOffset);
+void getCaller(i32ptr* resultOffset);
+int32_t getCallValue(i32ptr* resultOffset);
+void writeLog(i32ptr* pointer, int32_t length, i32ptr* topicPtr, int32_t numTopics);
+void finish(i32ptr* dataOffset, int32_t length);
+void signalError();
 long long getGasLeft();
-int32_t loadBlockHash(long long nonce, i32ptr* resultOffset);
 long long getBlockTimestamp();
 
-int32_t sendTransaction(long long gasLimit, i32ptr* dstOffset, int32_t valueRef, i32ptr* dataOffset, int32_t dataLength);
-
-int32_t storageStoreAsBytes(i32ptr* keyOffset, i32ptr* dataOffset, int32_t dataLength);
-int32_t storageLoadAsBytes(i32ptr* keyOffset, i32ptr* dataOffset);
-int32_t storageStoreAsBigInt(i32ptr* keyOffset, int32_t source);
-int32_t storageLoadAsBigInt(i32ptr* keyOffset, int32_t destination);
-int32_t storageStoreAsInt64(i32ptr* keyOffset, long long value);
-long long storageLoadAsInt64(i32ptr* keyOffset);
-
-void returnBigInt(int32_t reference);
-void returnInt32(int32_t value);
-void writeLog(int32_t pointer, int32_t length, int32_t topicPtr, int32_t numTopics);
-void signalError();
+long long int64getArgument(int32_t id);
+int32_t int64storageStore(i32ptr* keyOffset, long long value);
+long long int64storageLoad(i32ptr* keyOffset);
+void int64finish(long long value);
 
 int32_t bigIntNew(int32_t smallValue);
 int32_t bigIntByteLength(int32_t reference);
@@ -56,12 +50,12 @@ void bigIntAdd(int32_t destination, int32_t op1, int32_t op2);
 void bigIntSub(int32_t destination, int32_t op1, int32_t op2);
 void bigIntMul(int32_t destination, int32_t op1, int32_t op2);
 int32_t bigIntCmp(int32_t op1, int32_t op2);
-
-void logMessage(i32ptr* pointer, int32_t length);
-void debugPrintBigInt(int32_t value);
-void debugPrintInt32(int32_t value);
-void debugPrintBytes(i32ptr* byteOffset, int32_t byteLength);
-void debugPrintString(i32ptr* byteOffset, int32_t byteLength);
+void bigIntFinish(int32_t reference);
+int32_t bigIntstorageStore(i32ptr* keyOffset, int32_t source);
+int32_t bigIntstorageLoad(i32ptr* keyOffset, int32_t destination);
+void bigIntgetArgument(int32_t id, int32_t destination);
+void bigIntgetCallValue(int32_t destination);
+void bigIntgetExternalBalance(i32ptr* addressOffset, int32_t result);
 
 
 
@@ -76,11 +70,11 @@ void init() {
     return;
   }
 
-  loadCaller((i32ptr*)sender);
+  getCaller((i32ptr*)sender);
   int32_t totalAmount = bigIntNew(0);
-  loadArgumentAsBigInt(0, totalAmount);
+  bigIntgetArgument(0, totalAmount);
 
-  storageStoreAsBigInt((i32ptr*)sender, totalAmount);
+  bigIntstorageStore((i32ptr*)sender, totalAmount);
 }
 
 void do_balance() {
@@ -89,32 +83,28 @@ void do_balance() {
     return;
   }
 
-  loadArgumentAsBytes(0, (i32ptr*)subject);
+  getArgument(0, (i32ptr*)subject);
   
   int32_t balance = bigIntNew(0);
-  storageLoadAsBigInt((i32ptr*)subject, balance);
+  bigIntstorageLoad((i32ptr*)subject, balance);
 
-  returnBigInt(balance);
+  bigIntFinish(balance);
 }
 
-void transfer() {
+void transfer_token() {
   if (getNumArguments() != 2) {
     signalError();
     return;
   }
 
-  loadCaller((i32ptr*)sender);
-  loadArgumentAsBytes(0, (i32ptr*)recipient);
+  getCaller((i32ptr*)sender);
+  getArgument(0, (i32ptr*)recipient);
 
   int32_t amount = bigIntNew(0);
-  loadArgumentAsBigInt(1, amount);
+  bigIntgetArgument(1, amount);
 
   int32_t senderBalance = bigIntNew(0);
-  storageLoadAsBigInt((i32ptr*)sender, senderBalance);
-
-  debugPrintBigInt(amount);
-  debugPrintBigInt(senderBalance);
-  debugPrintInt32(bigIntCmp(amount, senderBalance));
+  bigIntstorageLoad((i32ptr*)sender, senderBalance);
 
   if (bigIntCmp(amount, senderBalance) > 0) {
     signalError();
@@ -122,12 +112,12 @@ void transfer() {
   }
 
   bigIntSub(senderBalance, senderBalance, amount);
-  storageStoreAsBigInt((i32ptr*)sender, senderBalance);
+  bigIntstorageStore((i32ptr*)sender, senderBalance);
 
   int32_t receiverBalance = bigIntNew(0);
-  storageLoadAsBigInt((i32ptr*)recipient, receiverBalance);
+  bigIntstorageLoad((i32ptr*)recipient, receiverBalance);
   bigIntAdd(receiverBalance, receiverBalance, amount);
-  storageStoreAsBigInt((i32ptr*)recipient, receiverBalance);
+  bigIntstorageStore((i32ptr*)recipient, receiverBalance);
 }
 
 // global data used in next function, will be allocated to WebAssembly memory
