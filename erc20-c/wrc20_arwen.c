@@ -68,6 +68,7 @@ void debugPrintString(i32ptr* byteOffset, int32_t byteLength);
 // global data used in next function, will be allocated to WebAssembly memory
 bytes32 sender[1] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 bytes32 recipient[1] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+bytes32 subject[1] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
 void init() {
   if (getNumArguments() != 1) {
@@ -77,21 +78,21 @@ void init() {
 
   loadCaller((i32ptr*)sender);
   int32_t totalAmount = bigIntNew(0);
-  loadArgumentAsBigInt(totalAmount, 0);
+  loadArgumentAsBigInt(0, totalAmount);
 
   storageStoreAsBigInt((i32ptr*)sender, totalAmount);
 }
 
 void do_balance() {
-  if (getNumArguments() != 0) {
+  if (getNumArguments() != 1) {
     signalError();
     return;
   }
 
-  loadCaller((i32ptr*)sender);
+  loadArgumentAsBytes(0, (i32ptr*)subject);
   
   int32_t balance = bigIntNew(0);
-  storageLoadAsBigInt((i32ptr*)sender, balance);
+  storageLoadAsBigInt((i32ptr*)subject, balance);
 
   returnBigInt(balance);
 }
@@ -104,11 +105,16 @@ void transfer() {
 
   loadCaller((i32ptr*)sender);
   loadArgumentAsBytes(0, (i32ptr*)recipient);
+
   int32_t amount = bigIntNew(0);
-  loadArgumentAsBigInt(amount, 1);
+  loadArgumentAsBigInt(1, amount);
 
   int32_t senderBalance = bigIntNew(0);
   storageLoadAsBigInt((i32ptr*)sender, senderBalance);
+
+  debugPrintBigInt(amount);
+  debugPrintBigInt(senderBalance);
+  debugPrintInt32(bigIntCmp(amount, senderBalance));
 
   if (bigIntCmp(amount, senderBalance) > 0) {
     signalError();
