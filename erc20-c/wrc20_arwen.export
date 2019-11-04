@@ -1,4 +1,7 @@
 init
-balanceOf
 totalSupply
+balanceOf
+allowance
 transferToken
+approve
+transferFrom
