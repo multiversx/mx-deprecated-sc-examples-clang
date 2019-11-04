@@ -1,8 +1,10 @@
 
 # C smart contracts 
-*.wasm
 *.ll
 *.o
+*.wasm
+*.wasm.hex
+*.wasm.hex.arwen
 
 # Rust smart contracts
 */target/

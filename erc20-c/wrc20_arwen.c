@@ -2,9 +2,10 @@
 #include "elrond/bigInt.h"
 
 // global data used in next function, will be allocated to WebAssembly memory
-byte sender[32]    = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-byte recipient[32] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-byte subject[32]   = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+byte sender[32]         = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+byte recipient[32]      = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+byte subject[32]        = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+byte totalSupplyKey[32] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
 void init() {
   if (getNumArguments() != 1) {
@@ -13,27 +14,37 @@ void init() {
   }
 
   getCaller(sender);
-  bigInt totalAmount = bigIntNew(0);
-  bigIntgetArgument(0, totalAmount);
+  bigInt totalSupply = bigIntNew(0);
+  bigIntgetArgument(0, totalSupply);
 
-  bigIntstorageStore(sender, totalAmount);
+  bigIntstorageStore(totalSupplyKey, totalSupply);
+  bigIntstorageStore(sender, totalSupply);
 }
 
-void do_balance() {
+void balanceOf() {
   if (getNumArguments() != 1) {
     signalError();
     return;
   }
 
-  getArgument(0, subject);
-  
+  getArgument(0, subject); 
   bigInt balance = bigIntNew(0);
   bigIntstorageLoad(subject, balance);
-
   bigIntFinish(balance);
 }
 
-void transfer_token() {
+void totalSupply() {
+  if (getNumArguments() != 0) {
+    signalError();
+    return;
+  }
+  
+  bigInt totalSupply = bigIntNew(0);
+  bigIntstorageLoad(totalSupplyKey, totalSupply);
+  bigIntFinish(totalSupply);
+}
+
+void transferToken() {
   if (getNumArguments() != 2) {
     signalError();
     return;
