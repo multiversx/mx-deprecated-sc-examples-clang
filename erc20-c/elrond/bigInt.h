@@ -2,7 +2,7 @@
 
 typedef unsigned int bigInt;
 
-bigInt    bigIntNew(int value);
+bigInt    bigIntNew(long long value);
 
 void      bigIntgetArgument(int argumentIndex, bigInt argument);
 
