@@ -11,6 +11,8 @@
 
 # Variabled config
 variables.json
+watched.json
+watched.testnet.json
 
 # VSCode settings
 .vscode
