@@ -4,10 +4,10 @@ typedef unsigned int bigInt;
 
 bigInt    bigIntNew(long long value);
 
-void      bigIntgetArgument(int argumentIndex, bigInt argument);
+void      bigIntGetArgument(int argumentIndex, bigInt argument);
 
-int       bigIntstorageLoad(byte *key, bigInt value);
-int       bigIntstorageStore(byte *key, bigInt value);
+int       bigIntStorageLoad(byte *key, bigInt value);
+int       bigIntStorageStore(byte *key, bigInt value);
 
 void      bigIntAdd(bigInt destination, bigInt op1, bigInt op2);
 void      bigIntSub(bigInt destination, bigInt op1, bigInt op2);

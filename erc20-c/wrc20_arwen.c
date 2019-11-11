@@ -85,15 +85,15 @@ void init() {
 
   getCaller(sender);
   bigInt totalSupply = bigIntNew(0);
-  bigIntgetArgument(0, totalSupply);
+  bigIntGetArgument(0, totalSupply);
 
   // set total supply
   computeTotalSupplyKey(currentKey);
-  bigIntstorageStore(currentKey, totalSupply);
+  bigIntStorageStore(currentKey, totalSupply);
 
   // sender balance <- total supply
   computeBalanceKey(currentKey, sender);
-  bigIntstorageStore(currentKey, totalSupply);
+  bigIntStorageStore(currentKey, totalSupply);
 }
 
 // getter function: retrieves total token supply
@@ -106,7 +106,7 @@ void totalSupply() {
   // load total supply from storage
   computeTotalSupplyKey(currentKey);
   bigInt totalSupply = bigIntNew(0);
-  bigIntstorageLoad(currentKey, totalSupply);
+  bigIntStorageLoad(currentKey, totalSupply);
 
   // return total supply as big int
   bigIntFinish(totalSupply);
@@ -125,7 +125,7 @@ void balanceOf() {
   // load balance
   computeBalanceKey(currentKey, caller);
   bigInt balance = bigIntNew(0);
-  bigIntstorageLoad(currentKey, balance);
+  bigIntStorageLoad(currentKey, balance);
 
   // return balance as big int
   bigIntFinish(balance);
@@ -147,7 +147,7 @@ void allowance() {
   // get allowance
   computeAllowanceKey(currentKey, sender, recipient);
   bigInt allowance = bigIntNew(0);
-  bigIntstorageLoad(currentKey, allowance);
+  bigIntStorageLoad(currentKey, allowance);
 
   // return allowance as big int
   bigIntFinish(allowance);
@@ -166,9 +166,9 @@ void transferToken() {
   // 1st argument: recipient
   getArgument(0, recipient);
 
-  // 2nd argument: amount
+  // 2nd argument: amount (should not be negative)
   bigInt amount = bigIntNew(0);
-  bigIntgetArgument(1, amount);
+  bigIntGetArgument(1, amount);
   if (bigIntCmp(amount, bigIntNew(0)) < 0) {
     signalError();
     return;
@@ -177,7 +177,7 @@ void transferToken() {
   // load sender balance
   computeBalanceKey(currentKey, sender);
   bigInt senderBalance = bigIntNew(0);
-  bigIntstorageLoad(currentKey, senderBalance);
+  bigIntStorageLoad(currentKey, senderBalance);
 
   // check if enough funds
   if (bigIntCmp(amount, senderBalance) > 0) {
@@ -187,14 +187,14 @@ void transferToken() {
 
   // update sender balance
   bigIntSub(senderBalance, senderBalance, amount);
-  bigIntstorageStore(currentKey, senderBalance);
+  bigIntStorageStore(currentKey, senderBalance);
 
   // load & update receiver balance
   computeBalanceKey(currentKey, recipient);
   bigInt receiverBalance = bigIntNew(0);
-  bigIntstorageLoad(currentKey, receiverBalance);
+  bigIntStorageLoad(currentKey, receiverBalance);
   bigIntAdd(receiverBalance, receiverBalance, amount);
-  bigIntstorageStore(currentKey, receiverBalance);
+  bigIntStorageStore(currentKey, receiverBalance);
 
   // log operation
   saveLogWith3Topics(transferEvent, sender, recipient, amount);
@@ -219,7 +219,7 @@ void approve() {
 
   // 2nd argument: amount (should not be negative)
   bigInt amount = bigIntNew(0);
-  bigIntgetArgument(1, amount);
+  bigIntGetArgument(1, amount);
   if (bigIntCmp(amount, bigIntNew(0)) < 0) {
     signalError();
     return;
@@ -227,7 +227,7 @@ void approve() {
 
   // store allowance
   computeAllowanceKey(currentKey, sender, recipient);
-  bigIntstorageStore(currentKey, amount);
+  bigIntStorageStore(currentKey, amount);
 
   // log operation
   saveLogWith3Topics(approveEvent, sender, recipient, amount);
@@ -255,7 +255,7 @@ void transferFrom() {
 
   // 3rd argument: amount
   bigInt amount = bigIntNew(0);
-  bigIntgetArgument(2, amount);
+  bigIntGetArgument(2, amount);
   if (bigIntCmp(amount, bigIntNew(0)) < 0) {
     signalError();
     return;
@@ -264,7 +264,7 @@ void transferFrom() {
   // load allowance
   computeAllowanceKey(currentKey, sender, caller);
   bigInt allowance = bigIntNew(0);
-  bigIntstorageLoad(currentKey, allowance);
+  bigIntStorageLoad(currentKey, allowance);
 
   // amount should not exceed allowance
   if (bigIntCmp(amount, allowance) > 0) {
@@ -274,12 +274,12 @@ void transferFrom() {
 
   // update allowance
   bigIntSub(allowance, allowance, amount);
-  bigIntstorageStore(currentKey, allowance);
+  bigIntStorageStore(currentKey, allowance);
 
   // load sender balance
   computeBalanceKey(currentKey, sender);
   bigInt senderBalance = bigIntNew(0);
-  bigIntstorageLoad(currentKey, senderBalance);
+  bigIntStorageLoad(currentKey, senderBalance);
 
   // check if enough funds
   if (bigIntCmp(amount, senderBalance) > 0) {
@@ -289,14 +289,14 @@ void transferFrom() {
 
   // update sender balance
   bigIntSub(senderBalance, senderBalance, amount);
-  bigIntstorageStore(currentKey, senderBalance);
+  bigIntStorageStore(currentKey, senderBalance);
 
   // load & update receiver balance
   computeBalanceKey(currentKey, recipient);
   bigInt receiverBalance = bigIntNew(0);
-  bigIntstorageLoad(currentKey, receiverBalance);
+  bigIntStorageLoad(currentKey, receiverBalance);
   bigIntAdd(receiverBalance, receiverBalance, amount);
-  bigIntstorageStore(currentKey, receiverBalance);
+  bigIntStorageStore(currentKey, receiverBalance);
 
   // log operation
   saveLogWith3Topics(transferEvent, sender, recipient, amount);
