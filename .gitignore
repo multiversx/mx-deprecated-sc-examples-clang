@@ -9,5 +9,8 @@
 # Rust smart contracts
 */target/
 
+# Variabled config
+variables.json
+
 # VSCode settings
 .vscode
