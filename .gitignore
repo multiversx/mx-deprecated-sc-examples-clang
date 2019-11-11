@@ -8,3 +8,6 @@
 
 # Rust smart contracts
 */target/
+
+# VSCode settings
+.vscode
