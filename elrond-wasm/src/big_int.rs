@@ -7,6 +7,7 @@ use core::ops::SubAssign;
 use core::ops::Mul;
 use core::ops::MulAssign;
 
+use alloc::vec::Vec;
 
 extern {
     fn bigIntNew(value: i64) -> i32;
@@ -47,6 +48,29 @@ impl BigInt {
         unsafe {
             let byte_len = bigIntGetBytes(self.handle, slice.as_mut_ptr());
             byte_len
+        }
+    }
+
+    pub fn get_bytes_big_endian(&self) -> Vec<u8> {
+        unsafe {
+            let byte_len = bigIntByteLength(self.handle);
+            let mut vec = vec![0u8; byte_len as usize];
+            bigIntGetBytes(self.handle, vec.as_mut_ptr());
+            vec
+        }
+    }
+
+    pub fn get_bytes_big_endian_pad_right(&self, nr_bytes: usize) -> Vec<u8> {
+        unsafe {
+            let byte_len = bigIntByteLength(self.handle) as usize;
+            if byte_len > nr_bytes {
+                panic!();
+            }
+            let mut vec = vec![0u8; nr_bytes];
+            if byte_len > 0 {
+                bigIntGetBytes(self.handle, &mut vec[nr_bytes - byte_len]);
+            }
+            vec
         }
     }
 }
