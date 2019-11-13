@@ -1,8 +1,18 @@
 
 # C smart contracts 
-*.wasm
 *.ll
 *.o
+*.wasm
+*.wasm.hex
+*.wasm.hex.arwen
 
 # Rust smart contracts
 */target/
+
+# Variabled config
+variables.json
+watched.json
+watched.testnet.json
+
+# VSCode settings
+.vscode

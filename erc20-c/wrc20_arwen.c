@@ -1,123 +1,308 @@
+#include "elrond/context.h"
+#include "elrond/bigInt.h"
+
+// global data used in functions, will be statically allocated to WebAssembly memory
+byte sender[32]        = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+byte recipient[32]     = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+byte caller[32]        = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+byte currentKey[32]    = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+
+byte approveEvent[32]  = {0x71,0x34,0x69,0x2B,0x23,0x0B,0x9E,0x1F,0xFA,0x39,0x09,0x89,0x04,0x72,0x21,0x34,0x15,0x96,0x52,0xB0,0x9C,0x5B,0xC4,0x1D,0x88,0xD6,0x69,0x87,0x79,0xD2,0x28,0xFF};
+byte transferEvent[32] = {0xF0,0x99,0xCD,0x8B,0xDE,0x55,0x78,0x14,0x84,0x2A,0x31,0x21,0xE8,0xDD,0xFD,0x43,0x3A,0x53,0x9B,0x8C,0x9F,0x14,0xBF,0x31,0xEB,0xF1,0x08,0xD1,0x2E,0x61,0x96,0xE9};
+
+byte currentTopics[96] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+                          0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+                          0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+byte currentLogVal[32] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
 
-// to avoid includes from libc, just hard-code things
-typedef unsigned char uint8_t;
-typedef int int32_t;
-typedef int uint32_t;
-typedef unsigned long long uint64_t;
+void computeTotalSupplyKey(byte *destination) {
+  // only the total supply key starts with byte "0"
+  for (int i = 0; i < 32; i++) {
+    destination[i] = 0;
+  }
+}
 
-// types used for Ethereum stuff
-typedef uint8_t* bytes; // an array of bytes with unrestricted length
-typedef uint8_t bytes32[32]; // an array of 32 bytes
-typedef uint8_t address[32]; // an array of 32 bytes
-typedef unsigned __int128 u128; // a 128 bit number, represented as a 16 bytes long little endian unsigned integer in memory
-//typedef uint256_t u256; // a 256 bit number, represented as a 32 bytes long little endian unsigned integer in memory
-typedef uint32_t i32; // same as i32 in WebAssembly
-typedef uint32_t i32ptr; // same as i32 in WebAssembly, but treated as a pointer to a WebAssembly memory offset
-typedef uint64_t i64; // same as i64 in WebAssembly
+void computeBalanceKey(byte *destination, byte *address) {
+  // reserve one byte of the key to indicate key type
+  // "1" is for balance keys
+  destination[0] = 1;
+  destination[1] = 0;
 
-// elrond api functions
-void getOwner(i32ptr* resultOffset);
-void getExternalBalance(i32ptr* addressOffset, i32ptr* resultOffset);
-int32_t getBlockHash(long long nonce, i32ptr* resultOffset);
-int32_t transfer(long long gasLimit, i32ptr* dstOffset, i32ptr* sndOffset, i32ptr* valueOffset, i32ptr* dataOffset, int32_t length);
-int32_t getArgument(int32_t id, i32ptr* argOffset);
-int32_t getFunction(i32ptr* functionOffset);
-int32_t getNumArguments();
-int32_t storageStore(i32ptr* keyOffset, i32ptr* dataOffset, int32_t dataLength);
-int32_t storageLoad(i32ptr* keyOffset, i32ptr* dataOffset);
-void getCaller(i32ptr* resultOffset);
-int32_t getCallValue(i32ptr* resultOffset);
-void writeLog(i32ptr* pointer, int32_t length, i32ptr* topicPtr, int32_t numTopics);
-void finish(i32ptr* dataOffset, int32_t length);
-void signalError();
-long long getGasLeft();
-long long getBlockTimestamp();
+  // the last 2 bytes of the address are only used to identify the shard, 
+  // so they are disposable when constructing the key
+  for (int i = 0; i < 30; i++) {
+    destination[2+i] = address[i];
+  }
+}
 
-long long int64getArgument(int32_t id);
-int32_t int64storageStore(i32ptr* keyOffset, long long value);
-long long int64storageLoad(i32ptr* keyOffset);
-void int64finish(long long value);
+void computeAllowanceKey(byte *destination, byte *from, byte* to) {
+  // reserve one byte of the key to indicate key type
+  // "2" is for allowance keys
+  destination[0] = 2;
 
-int32_t bigIntNew(int32_t smallValue);
-int32_t bigIntByteLength(int32_t reference);
-int32_t bigIntGetBytes(int32_t reference, i32ptr* byteOffset);
-void bigIntSetBytes(int32_t destination, i32ptr* byteOffset, int32_t byteLength);
-int32_t bigIntIsInt64(int32_t reference);
-long long bigIntGetInt64(int32_t reference);
-void bigIntSetInt64(int32_t destination, long long value);
-void bigIntAdd(int32_t destination, int32_t op1, int32_t op2);
-void bigIntSub(int32_t destination, int32_t op1, int32_t op2);
-void bigIntMul(int32_t destination, int32_t op1, int32_t op2);
-int32_t bigIntCmp(int32_t op1, int32_t op2);
-void bigIntFinish(int32_t reference);
-int32_t bigIntstorageStore(i32ptr* keyOffset, int32_t source);
-int32_t bigIntstorageLoad(i32ptr* keyOffset, int32_t destination);
-void bigIntgetArgument(int32_t id, int32_t destination);
-void bigIntgetCallValue(int32_t destination);
-void bigIntgetExternalBalance(i32ptr* addressOffset, int32_t result);
+  // Note: in smart contract addresses, the first 10 bytes are all 0
+  // therefore we read from byte 10 onwards to provide more significant bytes
+  // and to minimize the chance for collisions
+  // TODO: switching to a hash instead of a concatenation of addresses might make it safer
+  for (int i = 0; i < 15; i++) {
+    destination[1+i] = from[10+i];
+  }
+  for (int i = 0; i < 16; i++) {
+    destination[16+i] = to[10+i];
+  }
+}
 
+// both transfer and approve have 3 topics (event identifier, sender, recipient)
+// so both prepare the log the same way
+void saveLogWith3Topics(byte *topic1, byte *topic2, byte *topic3, bigInt value) {
+  // copy all topics to currentTopics
+  for (int i = 0; i < 32; i++) {
+    currentTopics[i] = topic1[i];
+  }
+  for (int i = 0; i < 32; i++) {
+    currentTopics[32+i] = topic2[i];
+  }
+  for (int i = 0; i < 32; i++) {
+    currentTopics[64+i] = topic3[i];
+  }
 
+  // extract value bytes to memory
+  int valueLen = bigIntGetBytes(value, currentLogVal);
 
-// global data used in next function, will be allocated to WebAssembly memory
-bytes32 sender[1] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-bytes32 recipient[1] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-bytes32 subject[1] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+  // call api
+  writeLog(currentLogVal, valueLen, currentTopics, 3);
+}
 
+// constructor function
+// is called immediately after the contract is created
+// will set the fixed global token supply and give all the supply to the creator
 void init() {
   if (getNumArguments() != 1) {
     signalError();
     return;
   }
 
-  getCaller((i32ptr*)sender);
-  int32_t totalAmount = bigIntNew(0);
-  bigIntgetArgument(0, totalAmount);
+  getCaller(sender);
+  bigInt totalSupply = bigIntNew(0);
+  bigIntGetArgument(0, totalSupply);
 
-  bigIntstorageStore((i32ptr*)sender, totalAmount);
+  // set total supply
+  computeTotalSupplyKey(currentKey);
+  bigIntStorageStore(currentKey, totalSupply);
+
+  // sender balance <- total supply
+  computeBalanceKey(currentKey, sender);
+  bigIntStorageStore(currentKey, totalSupply);
 }
 
-void do_balance() {
+// getter function: retrieves total token supply
+void totalSupply() {
+  if (getNumArguments() != 0) {
+    signalError();
+    return;
+  }
+  
+  // load total supply from storage
+  computeTotalSupplyKey(currentKey);
+  bigInt totalSupply = bigIntNew(0);
+  bigIntStorageLoad(currentKey, totalSupply);
+
+  // return total supply as big int
+  bigIntFinish(totalSupply);
+}
+
+// getter function: retrieves balance for an account
+void balanceOf() {
   if (getNumArguments() != 1) {
     signalError();
     return;
   }
 
-  getArgument(0, (i32ptr*)subject);
-  
-  int32_t balance = bigIntNew(0);
-  bigIntstorageLoad((i32ptr*)subject, balance);
+  // argument: account to get the balance for
+  getArgument(0, caller); 
 
+  // load balance
+  computeBalanceKey(currentKey, caller);
+  bigInt balance = bigIntNew(0);
+  bigIntStorageLoad(currentKey, balance);
+
+  // return balance as big int
   bigIntFinish(balance);
 }
 
-void transfer_token() {
+// getter function: retrieves allowance granted from one account to another
+void allowance() {
   if (getNumArguments() != 2) {
     signalError();
     return;
   }
 
-  getCaller((i32ptr*)sender);
-  getArgument(0, (i32ptr*)recipient);
+  // 1st argument: owner
+  getArgument(0, sender);
 
-  int32_t amount = bigIntNew(0);
-  bigIntgetArgument(1, amount);
+  // 2nd argument: spender
+  getArgument(1, recipient);
 
-  int32_t senderBalance = bigIntNew(0);
-  bigIntstorageLoad((i32ptr*)sender, senderBalance);
+  // get allowance
+  computeAllowanceKey(currentKey, sender, recipient);
+  bigInt allowance = bigIntNew(0);
+  bigIntStorageLoad(currentKey, allowance);
 
+  // return allowance as big int
+  bigIntFinish(allowance);
+}
+
+// transfers tokens from sender to another account
+void transferToken() {
+  if (getNumArguments() != 2) {
+    signalError();
+    return;
+  }
+
+  // sender is the caller
+  getCaller(sender);
+
+  // 1st argument: recipient
+  getArgument(0, recipient);
+
+  // 2nd argument: amount (should not be negative)
+  bigInt amount = bigIntNew(0);
+  bigIntGetArgument(1, amount);
+  if (bigIntCmp(amount, bigIntNew(0)) < 0) {
+    signalError();
+    return;
+  }
+
+  // load sender balance
+  computeBalanceKey(currentKey, sender);
+  bigInt senderBalance = bigIntNew(0);
+  bigIntStorageLoad(currentKey, senderBalance);
+
+  // check if enough funds
   if (bigIntCmp(amount, senderBalance) > 0) {
     signalError();
     return;
   }
 
+  // update sender balance
   bigIntSub(senderBalance, senderBalance, amount);
-  bigIntstorageStore((i32ptr*)sender, senderBalance);
+  bigIntStorageStore(currentKey, senderBalance);
 
-  int32_t receiverBalance = bigIntNew(0);
-  bigIntstorageLoad((i32ptr*)recipient, receiverBalance);
+  // load & update receiver balance
+  computeBalanceKey(currentKey, recipient);
+  bigInt receiverBalance = bigIntNew(0);
+  bigIntStorageLoad(currentKey, receiverBalance);
   bigIntAdd(receiverBalance, receiverBalance, amount);
-  bigIntstorageStore((i32ptr*)recipient, receiverBalance);
+  bigIntStorageStore(currentKey, receiverBalance);
+
+  // log operation
+  saveLogWith3Topics(transferEvent, sender, recipient, amount);
+
+  // return "true"
+  int64finish(1); 
+}
+
+// sender allows beneficiary to use given amount of tokens from sender's balance
+// it will completely overwrite any previously existing allowance from sender to beneficiary
+void approve() {
+  if (getNumArguments() != 2) {
+    signalError();
+    return;
+  }
+
+  // sender is the caller
+  getCaller(sender);
+
+  // 1st argument: spender (beneficiary)
+  getArgument(0, recipient);
+
+  // 2nd argument: amount (should not be negative)
+  bigInt amount = bigIntNew(0);
+  bigIntGetArgument(1, amount);
+  if (bigIntCmp(amount, bigIntNew(0)) < 0) {
+    signalError();
+    return;
+  }
+
+  // store allowance
+  computeAllowanceKey(currentKey, sender, recipient);
+  bigIntStorageStore(currentKey, amount);
+
+  // log operation
+  saveLogWith3Topics(approveEvent, sender, recipient, amount);
+
+  // return "true"
+  int64finish(1); 
+}
+
+
+// caller uses allowance to transfer funds between 2 other accounts
+void transferFrom() {
+   if (getNumArguments() != 3) {
+    signalError();
+    return;
+  }
+
+  // save caller
+  getCaller(caller);
+
+  // 1st argument: sender
+  getArgument(0, sender);
+
+  // 2nd argument: recipient
+  getArgument(1, recipient);
+
+  // 3rd argument: amount
+  bigInt amount = bigIntNew(0);
+  bigIntGetArgument(2, amount);
+  if (bigIntCmp(amount, bigIntNew(0)) < 0) {
+    signalError();
+    return;
+  }
+
+  // load allowance
+  computeAllowanceKey(currentKey, sender, caller);
+  bigInt allowance = bigIntNew(0);
+  bigIntStorageLoad(currentKey, allowance);
+
+  // amount should not exceed allowance
+  if (bigIntCmp(amount, allowance) > 0) {
+    signalError();
+    return;
+  }
+
+  // update allowance
+  bigIntSub(allowance, allowance, amount);
+  bigIntStorageStore(currentKey, allowance);
+
+  // load sender balance
+  computeBalanceKey(currentKey, sender);
+  bigInt senderBalance = bigIntNew(0);
+  bigIntStorageLoad(currentKey, senderBalance);
+
+  // check if enough funds
+  if (bigIntCmp(amount, senderBalance) > 0) {
+    signalError();
+    return;
+  }
+
+  // update sender balance
+  bigIntSub(senderBalance, senderBalance, amount);
+  bigIntStorageStore(currentKey, senderBalance);
+
+  // load & update receiver balance
+  computeBalanceKey(currentKey, recipient);
+  bigInt receiverBalance = bigIntNew(0);
+  bigIntStorageLoad(currentKey, receiverBalance);
+  bigIntAdd(receiverBalance, receiverBalance, amount);
+  bigIntStorageStore(currentKey, receiverBalance);
+
+  // log operation
+  saveLogWith3Topics(transferEvent, sender, recipient, amount);
+
+  // return "true"
+  int64finish(1); 
 }
 
 // global data used in next function, will be allocated to WebAssembly memory
