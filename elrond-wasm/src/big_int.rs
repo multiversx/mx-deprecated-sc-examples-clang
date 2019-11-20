@@ -23,7 +23,7 @@ extern {
     fn bigIntStorageStore(key_ptr: *const u8, source: i32) -> i32;
     fn bigIntStorageLoad(key_ptr: *const u8, destination: i32) -> i32;
     
-    fn bigIntGetArgument(arg_id: i32, dest: i32);
+    fn bigIntGetSignedArgument(arg_id: i32, dest: i32);
     fn bigIntGetCallValue(dest: i32);
     fn bigIntFinish(bih: i32);
 }
@@ -152,7 +152,7 @@ pub fn storage_load_big_int(key: &[u8; 32]) -> BigInt {
 pub fn get_argument_big_int(arg_id: i32) -> BigInt {
     unsafe {
         let result = bigIntNew(0);
-        bigIntGetArgument(arg_id, result);
+        bigIntGetSignedArgument(arg_id, result);
         BigInt {handle: result}
     }
 }

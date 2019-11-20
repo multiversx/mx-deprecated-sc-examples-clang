@@ -3,8 +3,8 @@
 *.ll
 *.o
 *.wasm
-*.wasm.hex
-*.wasm.hex.arwen
+*.hex
+*.hex.arwen
 
 # Rust smart contracts
 */target/

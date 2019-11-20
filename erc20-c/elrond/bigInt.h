@@ -4,7 +4,8 @@ typedef unsigned int bigInt;
 
 bigInt    bigIntNew(long long value);
 
-void      bigIntGetArgument(int argumentIndex, bigInt argument);
+void      bigIntGetUnsignedArgument(int argumentIndex, bigInt argument);
+void      bigIntGetSignedArgument(int argumentIndex, bigInt argument);
 
 int       bigIntStorageLoad(byte *key, bigInt value);
 int       bigIntStorageStore(byte *key, bigInt value);
