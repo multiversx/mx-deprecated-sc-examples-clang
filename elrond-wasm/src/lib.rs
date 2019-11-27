@@ -17,10 +17,12 @@
 mod ext;
 mod ext_int64;
 mod big_int;
+mod address;
 
 pub use ext::*;
 pub use ext_int64::*;
 pub use big_int::*;
+pub use address::*;
 
 use core::panic::PanicInfo;
 

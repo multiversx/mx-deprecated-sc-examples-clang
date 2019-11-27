@@ -9,6 +9,8 @@ use core::ops::MulAssign;
 
 use alloc::vec::Vec;
 
+use crate::address::StorageKey;
+
 extern {
     fn bigIntNew(value: i64) -> i32;
 
@@ -31,6 +33,14 @@ extern {
 
 pub struct BigInt {
     handle: i32
+}
+
+impl From<i64> for BigInt {
+    fn from(item: i64) -> Self {
+        unsafe {
+            BigInt{ handle: bigIntNew(item) }
+        }
+    }
 }
 
 impl BigInt {
@@ -159,16 +169,16 @@ impl BigInt {
     }
 }
 
-pub fn storage_store_big_int(key: &[u8; 32], value: &BigInt) {
+pub fn storage_store_big_int(key: &StorageKey, value: &BigInt) {
     unsafe {
-        bigIntStorageStore(key.as_ptr(), value.handle);
+        bigIntStorageStore(key.as_ref().as_ptr(), value.handle);
     }
 }
 
-pub fn storage_load_big_int(key: &[u8; 32]) -> BigInt {
+pub fn storage_load_big_int(key: &StorageKey) -> BigInt {
     unsafe {
         let result = bigIntNew(0);
-        bigIntStorageLoad(key.as_ptr(), result);
+        bigIntStorageLoad(key.as_ref().as_ptr(), result);
         BigInt {handle: result}
     }
 }

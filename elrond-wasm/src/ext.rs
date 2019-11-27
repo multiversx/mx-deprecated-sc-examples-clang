@@ -1,4 +1,6 @@
 
+use crate::address::Address;
+
 const ADDRESS_LENGTH: usize = 32;
 const KEY_LENGTH: usize = 32;
 const TOPIC_LENGTH: usize = 32;
@@ -33,19 +35,19 @@ extern {
     fn getPrevBlockRandomSeed(resultOffset: *const u8);
 }
 
-pub fn get_owner() -> [u8; 32] {
+pub fn get_owner() -> Address {
     unsafe {
         let mut res = [0u8; 32];
         getOwner(res.as_mut_ptr());
-        res
+        res.into()
     }
 }
 
-pub fn get_caller() -> [u8; 32] {
+pub fn get_caller() -> Address {
     unsafe {
         let mut res = [0u8; 32];
         getCaller(res.as_mut_ptr());
-        res
+        res.into()
     }
 }
 
@@ -58,6 +60,14 @@ pub fn get_argument_bytes32(ard_index: i32) -> [u8; 32] {
         let mut res = [0u8; 32];
         getArgument(ard_index, res.as_mut_ptr());
         res
+    }
+}
+
+pub fn get_argument_address(ard_index: i32) -> Address {
+    unsafe {
+        let mut res = [0u8; 32];
+        getArgument(ard_index, res.as_mut_ptr());
+        res.into()
     }
 }
 
