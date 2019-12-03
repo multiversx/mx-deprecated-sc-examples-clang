@@ -7,6 +7,8 @@ extern crate elrond_wasm;
 use elrond_wasm as ew;
 use elrond_wasm::BigInt;
 
+use elrond_wasm::Vec;
+
 extern {
     fn getNumArguments() -> i32;
     fn bigIntNew(value: i64) -> i32;
@@ -32,6 +34,15 @@ extern {
 
 #[no_mangle]
 pub extern fn dummy1() {
+    let x = BigInt::from_i64(260);
+    let vec1: Vec<u8> = x.get_bytes_big_endian_pad_right(10);
+    for i in vec1.iter() {
+        ew::finish_i64(*i as i64);
+    }
+}
+
+#[no_mangle]
+pub extern fn dummy10() {
     let x = BigInt::from_i64(5);
     let y = BigInt::from_i64(7);
     let mut z = x + y;

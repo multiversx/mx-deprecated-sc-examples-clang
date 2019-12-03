@@ -55,11 +55,10 @@ fn allowance_key(from: &[u8; 32], to: &[u8; 32]) -> [u8; 32] {
 fn save_log_with_3_topics(topic1: &[u8; 32], topic2: &[u8; 32], topic3: &[u8; 32], value: &BigInt) {
   let topics = [*topic1, *topic2, *topic3];
 
-  let mut data_array = [0u8; 32];
-  let byte_len = value.copy_to_slice(&mut data_array[..]);
+  let data_vec = value.get_bytes_big_endian_pad_right(32);
 
   // call api
-  ew::write_log(&topics[..], &data_array[..byte_len as usize]);
+  ew::write_log(&topics[..], data_vec.as_slice());
 }
 
 // constructor function

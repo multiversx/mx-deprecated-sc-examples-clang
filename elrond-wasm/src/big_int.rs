@@ -7,6 +7,9 @@ use core::ops::SubAssign;
 use core::ops::Mul;
 use core::ops::MulAssign;
 
+use alloc::vec::Vec;
+
+use crate::address::StorageKey;
 
 extern {
     fn bigIntNew(value: i64) -> i32;
@@ -32,6 +35,14 @@ pub struct BigInt {
     handle: i32
 }
 
+impl From<i64> for BigInt {
+    fn from(item: i64) -> Self {
+        unsafe {
+            BigInt{ handle: bigIntNew(item) }
+        }
+    }
+}
+
 impl BigInt {
     pub fn from_i64(value: i64) -> BigInt {
         unsafe {
@@ -47,6 +58,29 @@ impl BigInt {
         unsafe {
             let byte_len = bigIntGetBytes(self.handle, slice.as_mut_ptr());
             byte_len
+        }
+    }
+
+    pub fn get_bytes_big_endian(&self) -> Vec<u8> {
+        unsafe {
+            let byte_len = bigIntByteLength(self.handle);
+            let mut vec = vec![0u8; byte_len as usize];
+            bigIntGetBytes(self.handle, vec.as_mut_ptr());
+            vec
+        }
+    }
+
+    pub fn get_bytes_big_endian_pad_right(&self, nr_bytes: usize) -> Vec<u8> {
+        unsafe {
+            let byte_len = bigIntByteLength(self.handle) as usize;
+            if byte_len > nr_bytes {
+                panic!();
+            }
+            let mut vec = vec![0u8; nr_bytes];
+            if byte_len > 0 {
+                bigIntGetBytes(self.handle, &mut vec[nr_bytes - byte_len]);
+            }
+            vec
         }
     }
 }
@@ -135,16 +169,16 @@ impl BigInt {
     }
 }
 
-pub fn storage_store_big_int(key: &[u8; 32], value: &BigInt) {
+pub fn storage_store_big_int(key: &StorageKey, value: &BigInt) {
     unsafe {
-        bigIntStorageStore(key.as_ptr(), value.handle);
+        bigIntStorageStore(key.as_ref().as_ptr(), value.handle);
     }
 }
 
-pub fn storage_load_big_int(key: &[u8; 32]) -> BigInt {
+pub fn storage_load_big_int(key: &StorageKey) -> BigInt {
     unsafe {
         let result = bigIntNew(0);
-        bigIntStorageLoad(key.as_ptr(), result);
+        bigIntStorageLoad(key.as_ref().as_ptr(), result);
         BigInt {handle: result}
     }
 }
