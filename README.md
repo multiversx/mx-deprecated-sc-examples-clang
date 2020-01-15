@@ -1,15 +1,4 @@
 # sc-examples
-Elrond smart contract examples
+Elrond smart contract examples written in C and Solidity.
 
-
-# utils
-
-To build any of the Rust projects:
-```
-cargo build --target=wasm32-unknown-unknown
-```
-
-To debug macros:
-```
-// cargo +nightly rustc -- -Z unstable-options --pretty=expanded > demacroed.rs
-```
+For examples in Rust, see https://github.com/ElrondNetwork/sc-examples-rs
