@@ -1,5 +1,6 @@
 #include "elrond/context.h"
 #include "elrond/bigInt.h"
+#include "elrond/util.h"
 
 // global data used in functions, will be statically allocated to WebAssembly memory
 byte sender[32]        = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
@@ -84,6 +85,7 @@ void saveLogWith3Topics(byte *topic1, byte *topic2, byte *topic3, bigInt value) 
 // will set the fixed global token supply and give all the supply to the creator
 void init() {
   CHECK_NUM_ARGS(1);
+  CHECK_NOT_PAYABLE();
 
   getCaller(sender);
   bigInt totalSupply = bigIntNew(0);
@@ -101,6 +103,7 @@ void init() {
 // getter function: retrieves total token supply
 void totalSupply() {
   CHECK_NUM_ARGS(0);
+  CHECK_NOT_PAYABLE();
   
   // load total supply from storage
   computeTotalSupplyKey(currentKey);
@@ -114,6 +117,7 @@ void totalSupply() {
 // getter function: retrieves balance for an account
 void balanceOf() {
   CHECK_NUM_ARGS(1);
+  CHECK_NOT_PAYABLE();
 
   // argument: account to get the balance for
   getArgument(0, caller); 
@@ -130,6 +134,7 @@ void balanceOf() {
 // getter function: retrieves allowance granted from one account to another
 void allowance() {
   CHECK_NUM_ARGS(2);
+  CHECK_NOT_PAYABLE();
 
   // 1st argument: owner
   getArgument(0, sender);
@@ -149,6 +154,7 @@ void allowance() {
 // transfers tokens from sender to another account
 void transferToken() {
   CHECK_NUM_ARGS(2);
+  CHECK_NOT_PAYABLE();
 
   // sender is the caller
   getCaller(sender);
@@ -197,6 +203,7 @@ void transferToken() {
 // it will completely overwrite any previously existing allowance from sender to beneficiary
 void approve() {
   CHECK_NUM_ARGS(2);
+  CHECK_NOT_PAYABLE();
 
   // sender is the caller
   getCaller(sender);
@@ -227,6 +234,7 @@ void approve() {
 // caller uses allowance to transfer funds between 2 other accounts
 void transferFrom() {
   CHECK_NUM_ARGS(3);
+  CHECK_NOT_PAYABLE();
 
   // save caller
   getCaller(caller);

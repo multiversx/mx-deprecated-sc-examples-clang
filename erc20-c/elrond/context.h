@@ -30,20 +30,3 @@ int storageStore(byte *key, byte *data, int dataLength);
 int storageLoad(byte *key, byte *data);
 int int64storageStore(byte *key, long long value);
 long long int64storageLoad(byte *key);
-
-
-
-// Macros to simplify error declaration and handling
-#define ERROR_MSG(var, str) \
-    const int var##_LEN = sizeof str - 1;\
-    byte var[var##_LEN] = str;
-
-#define SIGNAL_ERROR(var) signalError(var, var##_LEN);
-
-ERROR_MSG(ERR_NUM_ARGS, "wrong number of arguments")
-#define CHECK_NUM_ARGS(expected) \
-    if (getNumArguments() != 1) {\
-        SIGNAL_ERROR(ERR_NUM_ARGS);\
-        return;\
-    }
-

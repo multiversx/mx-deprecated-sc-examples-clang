@@ -20,8 +20,8 @@ long long bigIntGetInt64(bigInt reference);
 void      bigIntSetInt64(bigInt destination, long long value);
 
 void      bigIntFinish(bigInt reference);
-void      bigIntgetCallValue(bigInt destination);
-void      bigIntgetExternalBalance(byte *address, bigInt result);
+void      bigIntGetCallValue(bigInt destination);
+void      bigIntGetExternalBalance(byte *address, bigInt result);
 
 int       bigIntByteLength(bigInt reference);
 int       bigIntGetBytes(bigInt reference, byte *byte);
