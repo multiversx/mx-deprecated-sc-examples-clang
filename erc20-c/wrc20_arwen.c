@@ -16,7 +16,6 @@ byte currentTopics[96] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 byte currentLogVal[32] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
 // error messages declared statically with the help of macros
-ERROR_MSG(ERR_NUM_ARGS, "wrong number of arguments")
 ERROR_MSG(ERR_TRANSFER_NEG, "transfer amount cannot be negative")
 ERROR_MSG(ERR_ALLOWANCE_NEG, "approve amount cannot be negative")
 ERROR_MSG(ERR_ALLOWANCE_EXCEEDED, "allowance exceeded")
@@ -84,10 +83,7 @@ void saveLogWith3Topics(byte *topic1, byte *topic2, byte *topic3, bigInt value) 
 // is called immediately after the contract is created
 // will set the fixed global token supply and give all the supply to the creator
 void init() {
-  if (getNumArguments() != 1) {
-    SIGNAL_ERROR(ERR_NUM_ARGS);
-    return;
-  }
+  CHECK_NUM_ARGS(1);
 
   getCaller(sender);
   bigInt totalSupply = bigIntNew(0);
@@ -104,10 +100,7 @@ void init() {
 
 // getter function: retrieves total token supply
 void totalSupply() {
-  if (getNumArguments() != 0) {
-    SIGNAL_ERROR(ERR_NUM_ARGS);
-    return;
-  }
+  CHECK_NUM_ARGS(0);
   
   // load total supply from storage
   computeTotalSupplyKey(currentKey);
@@ -120,10 +113,7 @@ void totalSupply() {
 
 // getter function: retrieves balance for an account
 void balanceOf() {
-  if (getNumArguments() != 1) {
-    SIGNAL_ERROR(ERR_NUM_ARGS);
-    return;
-  }
+  CHECK_NUM_ARGS(1);
 
   // argument: account to get the balance for
   getArgument(0, caller); 
@@ -139,10 +129,7 @@ void balanceOf() {
 
 // getter function: retrieves allowance granted from one account to another
 void allowance() {
-  if (getNumArguments() != 2) {
-    SIGNAL_ERROR(ERR_NUM_ARGS);
-    return;
-  }
+  CHECK_NUM_ARGS(2);
 
   // 1st argument: owner
   getArgument(0, sender);
@@ -161,10 +148,7 @@ void allowance() {
 
 // transfers tokens from sender to another account
 void transferToken() {
-  if (getNumArguments() != 2) {
-    SIGNAL_ERROR(ERR_NUM_ARGS);
-    return;
-  }
+  CHECK_NUM_ARGS(2);
 
   // sender is the caller
   getCaller(sender);
@@ -212,10 +196,7 @@ void transferToken() {
 // sender allows beneficiary to use given amount of tokens from sender's balance
 // it will completely overwrite any previously existing allowance from sender to beneficiary
 void approve() {
-  if (getNumArguments() != 2) {
-    SIGNAL_ERROR(ERR_NUM_ARGS);
-    return;
-  }
+  CHECK_NUM_ARGS(2);
 
   // sender is the caller
   getCaller(sender);
@@ -245,10 +226,7 @@ void approve() {
 
 // caller uses allowance to transfer funds between 2 other accounts
 void transferFrom() {
-   if (getNumArguments() != 3) {
-    SIGNAL_ERROR(ERR_NUM_ARGS);
-    return;
-  }
+  CHECK_NUM_ARGS(3);
 
   // save caller
   getCaller(caller);
