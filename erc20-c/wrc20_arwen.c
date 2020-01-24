@@ -15,6 +15,12 @@ byte currentTopics[96] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
                           0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 byte currentLogVal[32] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
+// error messages declared statically with the help of macros
+ERROR_MSG(ERR_NUM_ARGS, "wrong number of arguments")
+ERROR_MSG(ERR_TRANSFER_NEG, "transfer amount cannot be negative")
+ERROR_MSG(ERR_ALLOWANCE_NEG, "approve amount cannot be negative")
+ERROR_MSG(ERR_ALLOWANCE_EXCEEDED, "allowance exceeded")
+ERROR_MSG(ERR_INSUFFICIENT_FUNDS, "insufficient funds")
 
 void computeTotalSupplyKey(byte *destination) {
   // only the total supply key starts with byte "0"
@@ -79,7 +85,7 @@ void saveLogWith3Topics(byte *topic1, byte *topic2, byte *topic3, bigInt value) 
 // will set the fixed global token supply and give all the supply to the creator
 void init() {
   if (getNumArguments() != 1) {
-    signalError();
+    SIGNAL_ERROR(ERR_NUM_ARGS);
     return;
   }
 
@@ -99,7 +105,7 @@ void init() {
 // getter function: retrieves total token supply
 void totalSupply() {
   if (getNumArguments() != 0) {
-    signalError();
+    SIGNAL_ERROR(ERR_NUM_ARGS);
     return;
   }
   
@@ -115,7 +121,7 @@ void totalSupply() {
 // getter function: retrieves balance for an account
 void balanceOf() {
   if (getNumArguments() != 1) {
-    signalError();
+    SIGNAL_ERROR(ERR_NUM_ARGS);
     return;
   }
 
@@ -134,7 +140,7 @@ void balanceOf() {
 // getter function: retrieves allowance granted from one account to another
 void allowance() {
   if (getNumArguments() != 2) {
-    signalError();
+    SIGNAL_ERROR(ERR_NUM_ARGS);
     return;
   }
 
@@ -156,7 +162,7 @@ void allowance() {
 // transfers tokens from sender to another account
 void transferToken() {
   if (getNumArguments() != 2) {
-    signalError();
+    SIGNAL_ERROR(ERR_NUM_ARGS);
     return;
   }
 
@@ -170,7 +176,7 @@ void transferToken() {
   bigInt amount = bigIntNew(0);
   bigIntGetSignedArgument(1, amount);
   if (bigIntCmp(amount, bigIntNew(0)) < 0) {
-    signalError();
+    SIGNAL_ERROR(ERR_TRANSFER_NEG);
     return;
   }
 
@@ -181,7 +187,7 @@ void transferToken() {
 
   // check if enough funds
   if (bigIntCmp(amount, senderBalance) > 0) {
-    signalError();
+    SIGNAL_ERROR(ERR_INSUFFICIENT_FUNDS);
     return;
   }
 
@@ -207,7 +213,7 @@ void transferToken() {
 // it will completely overwrite any previously existing allowance from sender to beneficiary
 void approve() {
   if (getNumArguments() != 2) {
-    signalError();
+    SIGNAL_ERROR(ERR_NUM_ARGS);
     return;
   }
 
@@ -221,7 +227,7 @@ void approve() {
   bigInt amount = bigIntNew(0);
   bigIntGetSignedArgument(1, amount);
   if (bigIntCmp(amount, bigIntNew(0)) < 0) {
-    signalError();
+    SIGNAL_ERROR(ERR_ALLOWANCE_NEG);
     return;
   }
 
@@ -240,7 +246,7 @@ void approve() {
 // caller uses allowance to transfer funds between 2 other accounts
 void transferFrom() {
    if (getNumArguments() != 3) {
-    signalError();
+    SIGNAL_ERROR(ERR_NUM_ARGS);
     return;
   }
 
@@ -257,7 +263,7 @@ void transferFrom() {
   bigInt amount = bigIntNew(0);
   bigIntGetSignedArgument(2, amount);
   if (bigIntCmp(amount, bigIntNew(0)) < 0) {
-    signalError();
+    SIGNAL_ERROR(ERR_TRANSFER_NEG);
     return;
   }
 
@@ -268,7 +274,7 @@ void transferFrom() {
 
   // amount should not exceed allowance
   if (bigIntCmp(amount, allowance) > 0) {
-    signalError();
+    SIGNAL_ERROR(ERR_ALLOWANCE_EXCEEDED);
     return;
   }
 
@@ -283,7 +289,7 @@ void transferFrom() {
 
   // check if enough funds
   if (bigIntCmp(amount, senderBalance) > 0) {
-    signalError();
+    SIGNAL_ERROR(ERR_INSUFFICIENT_FUNDS);
     return;
   }
 

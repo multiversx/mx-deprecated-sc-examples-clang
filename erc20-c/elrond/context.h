@@ -10,7 +10,7 @@ long long getGasLeft();
 void finish(byte *data, int length);
 void int64finish(long long value);
 void writeLog(byte *pointer, int length, byte *topicPtr, int numTopics);
-void signalError();
+void signalError(byte *messagePointer, int messageLength);
 
 // Blockchain-related functions
 long long getBlockTimestamp();
@@ -30,3 +30,13 @@ int storageStore(byte *key, byte *data, int dataLength);
 int storageLoad(byte *key, byte *data);
 int int64storageStore(byte *key, long long value);
 long long int64storageLoad(byte *key);
+
+
+
+// Macros to simplify error declaration and handling
+#define ERROR_MSG(var, str) \
+const int var##_LEN = sizeof str - 1;\
+byte var[var##_LEN] = str;
+
+#define SIGNAL_ERROR(var) signalError(var, var##_LEN);
+
