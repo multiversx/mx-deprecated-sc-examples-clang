@@ -73,7 +73,7 @@ void saveLogWith3Topics(byte *topic1, byte *topic2, byte *topic3, bigInt value) 
   }
 
   // extract value bytes to memory
-  int valueLen = bigIntGetBytes(value, currentLogVal);
+  int valueLen = bigIntGetUnsignedBytes(value, currentLogVal);
 
   // call api
   writeLog(currentLogVal, valueLen, currentTopics, 3);
@@ -92,11 +92,11 @@ void init() {
 
   // set total supply
   computeTotalSupplyKey(currentKey);
-  bigIntStorageStore(currentKey, totalSupply);
+  bigIntStorageStoreUnsigned(currentKey, totalSupply);
 
   // sender balance <- total supply
   computeBalanceKey(currentKey, sender);
-  bigIntStorageStore(currentKey, totalSupply);
+  bigIntStorageStoreUnsigned(currentKey, totalSupply);
 }
 
 // getter function: retrieves total token supply
@@ -107,10 +107,10 @@ void totalSupply() {
   // load total supply from storage
   computeTotalSupplyKey(currentKey);
   bigInt totalSupply = bigIntNew(0);
-  bigIntStorageLoad(currentKey, totalSupply);
+  bigIntStorageLoadUnsigned(currentKey, totalSupply);
 
   // return total supply as big int
-  bigIntFinish(totalSupply);
+  bigIntFinishUnsigned(totalSupply);
 }
 
 // getter function: retrieves balance for an account
@@ -124,10 +124,10 @@ void balanceOf() {
   // load balance
   computeBalanceKey(currentKey, caller);
   bigInt balance = bigIntNew(0);
-  bigIntStorageLoad(currentKey, balance);
+  bigIntStorageLoadUnsigned(currentKey, balance);
 
   // return balance as big int
-  bigIntFinish(balance);
+  bigIntFinishUnsigned(balance);
 }
 
 // getter function: retrieves allowance granted from one account to another
@@ -144,10 +144,10 @@ void allowance() {
   // get allowance
   computeAllowanceKey(currentKey, sender, recipient);
   bigInt allowance = bigIntNew(0);
-  bigIntStorageLoad(currentKey, allowance);
+  bigIntStorageLoadUnsigned(currentKey, allowance);
 
   // return allowance as big int
-  bigIntFinish(allowance);
+  bigIntFinishUnsigned(allowance);
 }
 
 // transfers tokens from sender to another account
@@ -172,7 +172,7 @@ void transferToken() {
   // load sender balance
   computeBalanceKey(currentKey, sender);
   bigInt senderBalance = bigIntNew(0);
-  bigIntStorageLoad(currentKey, senderBalance);
+  bigIntStorageLoadUnsigned(currentKey, senderBalance);
 
   // check if enough funds
   if (bigIntCmp(amount, senderBalance) > 0) {
@@ -182,14 +182,14 @@ void transferToken() {
 
   // update sender balance
   bigIntSub(senderBalance, senderBalance, amount);
-  bigIntStorageStore(currentKey, senderBalance);
+  bigIntStorageStoreUnsigned(currentKey, senderBalance);
 
   // load & update receiver balance
   computeBalanceKey(currentKey, recipient);
   bigInt receiverBalance = bigIntNew(0);
-  bigIntStorageLoad(currentKey, receiverBalance);
+  bigIntStorageLoadUnsigned(currentKey, receiverBalance);
   bigIntAdd(receiverBalance, receiverBalance, amount);
-  bigIntStorageStore(currentKey, receiverBalance);
+  bigIntStorageStoreUnsigned(currentKey, receiverBalance);
 
   // log operation
   saveLogWith3Topics(transferEvent, sender, recipient, amount);
@@ -217,7 +217,7 @@ void approve() {
 
   // store allowance
   computeAllowanceKey(currentKey, sender, recipient);
-  bigIntStorageStore(currentKey, amount);
+  bigIntStorageStoreUnsigned(currentKey, amount);
 
   // log operation
   saveLogWith3Topics(approveEvent, sender, recipient, amount);
@@ -249,7 +249,7 @@ void transferFrom() {
   // load allowance
   computeAllowanceKey(currentKey, sender, caller);
   bigInt allowance = bigIntNew(0);
-  bigIntStorageLoad(currentKey, allowance);
+  bigIntStorageLoadUnsigned(currentKey, allowance);
 
   // amount should not exceed allowance
   if (bigIntCmp(amount, allowance) > 0) {
@@ -259,12 +259,12 @@ void transferFrom() {
 
   // update allowance
   bigIntSub(allowance, allowance, amount);
-  bigIntStorageStore(currentKey, allowance);
+  bigIntStorageStoreUnsigned(currentKey, allowance);
 
   // load sender balance
   computeBalanceKey(currentKey, sender);
   bigInt senderBalance = bigIntNew(0);
-  bigIntStorageLoad(currentKey, senderBalance);
+  bigIntStorageLoadUnsigned(currentKey, senderBalance);
 
   // check if enough funds
   if (bigIntCmp(amount, senderBalance) > 0) {
@@ -274,14 +274,14 @@ void transferFrom() {
 
   // update sender balance
   bigIntSub(senderBalance, senderBalance, amount);
-  bigIntStorageStore(currentKey, senderBalance);
+  bigIntStorageStoreUnsigned(currentKey, senderBalance);
 
   // load & update receiver balance
   computeBalanceKey(currentKey, recipient);
   bigInt receiverBalance = bigIntNew(0);
-  bigIntStorageLoad(currentKey, receiverBalance);
+  bigIntStorageLoadUnsigned(currentKey, receiverBalance);
   bigIntAdd(receiverBalance, receiverBalance, amount);
-  bigIntStorageStore(currentKey, receiverBalance);
+  bigIntStorageStoreUnsigned(currentKey, receiverBalance);
 
   // log operation
   saveLogWith3Topics(transferEvent, sender, recipient, amount);
