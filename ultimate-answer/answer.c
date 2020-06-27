@@ -1,4 +1,4 @@
-void int64finish(long long value);
+#include "elrond/context.h"
 
 void getUltimateAnswer() {
     int64finish(42);

@@ -1,6 +1,5 @@
 #include "elrond/context.h"
 #include "elrond/bigInt.h"
-#include "elrond/crypto.h"
 #include "elrond/util.h"
 
 // global data used in functions, will be statically allocated to WebAssembly memory
