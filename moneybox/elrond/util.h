@@ -2,8 +2,8 @@
 #include "bigInt.h"
 
 #define STORAGE_KEY(key) \
-    const int key##_LEN = sizeof #key - 1;\
-    byte key[key##_LEN + 1] = #key;
+    const int key##_KEY_LEN = sizeof #key - 1;\
+    byte key##_KEY[key##_KEY_LEN + 1] = #key;
 
 #define ERROR_MSG(var, str) \
     const int var##_LEN = sizeof str - 1;\

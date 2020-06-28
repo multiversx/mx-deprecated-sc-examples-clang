@@ -2,8 +2,8 @@
 #include "elrond/bigInt.h"
 #include "elrond/util.h"
 
-STORAGE_KEY(CREATOR_ADDRESS_KEY);
-STORAGE_KEY(TOTAL_AMOUNT_KEY);
+STORAGE_KEY(CREATOR_ADDRESS);
+STORAGE_KEY(TOTAL_AMOUNT);
 
 void _init_creator();
 void _init_total_amount();
