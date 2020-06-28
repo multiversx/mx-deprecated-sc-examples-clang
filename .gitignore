@@ -16,3 +16,5 @@ watched.testnet.json
 
 # VSCode settings
 .vscode
+
+**/node_modules

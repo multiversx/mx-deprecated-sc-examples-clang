@@ -1,0 +1,14 @@
+{
+  "name": "testjs",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "dependencies": {
+    "@elrondnetwork/erdjs": "^1.0.2",
+    "@elrondnetwork/erdtestjs": "^1.0.1-beta.2",
+    "chai": "^4.2.0",
+    "mocha": "^8.0.1"
+  }
+}
