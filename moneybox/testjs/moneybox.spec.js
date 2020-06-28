@@ -29,10 +29,10 @@ describe("Array", function () {
 
         let deployResponse = await world.deployContract({ impersonated: alice, code: code, gasLimit: GAS_LIMIT });
         assert.isTrue(deployResponse.isSuccess());
-        let contract = deployResponse.ContractAddressHex;
+        let contract = deployResponse.getContractAddress();
 
         // Creator is stored
-        // TODO: assert storage
+        assert.isTrue(world.getAccountStorage(contract).byString("CREATOR_ADDRESS").asAddress().equals(alice));
 
         // No money yet (zero ERD)
         let queryResponse = await world.queryContract({ contract: contract, impersonated: alice, functionName: "getTotalAmount", gasLimit: GAS_LIMIT });
