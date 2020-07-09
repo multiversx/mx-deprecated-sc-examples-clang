@@ -13,43 +13,53 @@ describe("Array", function () {
     let GAS_LIMIT = 500000;
 
     it("should not accept money at deploy", async () => {
-        let code = getCode();
-        let world = new World(this.ctx.test.title);
-        await world.createAccount({ address: alice, nonce: 42 });
+        let world = await setupWorld(this.ctx.test.title);
 
-        let deployResponse = await world.deployContract({ impersonated: alice, code: code, gasLimit: GAS_LIMIT, value: 5000 });
+        let deployResponse = await world.deployContract({ impersonated: alice, code: getCode(), gasLimit: GAS_LIMIT, value: 5000 });
         assert.equal(deployResponse.Output.ReturnCode, 4);
         assert.equal(deployResponse.Output.ReturnMessage, "attempted to transfer funds via a non-payable function");
     });
 
     it("should be initialized after deploy", async () => {
-        let code = getCode();
-        let world = new World(this.ctx.test.title);
-        await world.createAccount({ address: alice, nonce: 42 });
-
-        let deployResponse = await world.deployContract({ impersonated: alice, code: code, gasLimit: GAS_LIMIT });
-        assert.isTrue(deployResponse.isSuccess());
-        let contract = deployResponse.getContractAddress();
+        let world = await setupWorld(this.ctx.test.title);
+        let contract = await setupContract(world);
 
         // Creator is stored
-        assert.isTrue(world.getAccountStorage(contract).byString("CREATOR_ADDRESS").asAddress().equals(alice));
+        let storage = world.getAccountStorage(contract);
+        assert.isTrue(storage.byString("CREATOR_ADDRESS").asAddress().equals(alice));
 
         // No money yet (zero ERD)
         let queryResponse = await world.queryContract({ contract: contract, impersonated: alice, functionName: "getTotalAmount", gasLimit: GAS_LIMIT });
         assert.equal(queryResponse.firstResult().asNumber, 0);
     });
 
-    it("deposit should not accept more than 100 ERD", async () => {
+    it("should allow only the creator to deposit", async () => {
         
     });
 
-    it("should allow only the owner to deposit", async () => {
-        
+    it("deposit should not accept more than 100 ERD", async () => {
+        let world = await setupWorld(this.ctx.test.title);
+        let contract = await setupContract(world);
     });
 
     it("should send money to address when target is reached", async () => {
         
     });
+
+    async function setupWorld(name) {
+        let world = new World(name);
+        await world.createAccount({ address: alice, nonce: 42 });
+        await world.createAccount({ address: bob, nonce: 42 });
+        return world;
+    }
+
+    async function setupContract(world) {
+        let deployResponse = await world.deployContract({ impersonated: alice, code: getCode(), gasLimit: GAS_LIMIT });
+        assert.isTrue(deployResponse.isSuccess());
+
+        let contract = deployResponse.getContractAddress();
+        return contract;
+    }
 
     function getCode() {
         return erdtestjs.loadContractCode("../output/moneybox.wasm");
