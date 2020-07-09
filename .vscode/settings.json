@@ -1,0 +1,19 @@
+{
+    "terminal.integrated.env.linux": {
+        "PYTHONHOME": null,
+        "PATH": "${env:HOME}/elrondsdk/vendor-rust/bin:${env:HOME}/elrondsdk/erdpy-venv/bin:${env:HOME}/elrondsdk/arwentools:${env:PATH}",
+        "VIRTUAL_ENV": "${env:HOME}/elrondsdk/erdpy-venv",
+        "RUSTUP_HOME": "${env:HOME}/elrondsdk/vendor-rust",
+        "CARGO_HOME": "${env:HOME}/elrondsdk/vendor-rust"
+    },
+    "terminal.integrated.env.osx": {
+        "PYTHONHOME": null,
+        "PATH": "${env:HOME}/elrondsdk/vendor-rust/bin:${env:HOME}/elrondsdk/erdpy-venv/bin:${env:HOME}/elrondsdk/arwentools:${env:PATH}",
+        "VIRTUAL_ENV": "${env:HOME}/elrondsdk/erdpy-venv",
+        "RUSTUP_HOME": "${env:HOME}/elrondsdk/vendor-rust",
+        "CARGO_HOME": "${env:HOME}/elrondsdk/vendor-rust"
+    },
+    "terminal.integrated.environmentChangesIndicator": "on",
+    "terminal.integrated.inheritEnv": true,
+    "workbench.dialogs.customEnabled": true
+}

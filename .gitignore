@@ -14,7 +14,4 @@ variables.json
 watched.json
 watched.testnet.json
 
-# VSCode settings
-.vscode
-
 **/node_modules
