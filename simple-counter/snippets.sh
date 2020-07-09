@@ -9,7 +9,7 @@ deploy() {
 }
 
 increment() {
-    erdpymy --verbose contract call ${CONTRACT_ADDRESS} --recall-nonce --pem=${ALICE_PEM} --gas-limit=5000000 --function="increment" --proxy=${PROXY} --chain=${CHAIN}
+    erdpy --verbose contract call ${CONTRACT_ADDRESS} --recall-nonce --pem=${ALICE_PEM} --gas-limit=5000000 --function="increment" --proxy=${PROXY} --chain=${CHAIN}
 }
 
 decrement() {
@@ -17,5 +17,5 @@ decrement() {
 }
 
 get() {
-    erdpymy --verbose contract query ${CONTRACT_ADDRESS} --function="get" --proxy=${PROXY}
+    erdpy --verbose contract query ${CONTRACT_ADDRESS} --function="get" --proxy=${PROXY}
 }
