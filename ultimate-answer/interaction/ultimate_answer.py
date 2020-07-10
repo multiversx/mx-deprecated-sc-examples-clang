@@ -1,4 +1,3 @@
-import base64
 import logging
 from argparse import ArgumentParser
 
@@ -61,11 +60,8 @@ if __name__ == '__main__':
     def query_flow():
         global contract
 
-        answer = environment.query_contract(contract, "getUltimateAnswer")[0]
-        answer_bytes = base64.b64decode(answer)
-        answer_hex = answer_bytes.hex()
-        answer_int = int(answer_hex, 16)
-        logger.info(f"Answer: {answer_bytes}, {answer_hex}, {answer_int}")
+        answer = environment.query_contract(contract, "getUltimateAnswer")
+        logger.info(f"Answer: {answer}")
 
     while True:
         print("Let's run a flow.")
