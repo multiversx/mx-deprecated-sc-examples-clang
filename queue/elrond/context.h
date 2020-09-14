@@ -44,10 +44,14 @@ int storageLoad(byte *key, int keyLength, byte *data);
 int int64storageStore(byte *key, int keyLength, long long value);
 long long int64storageLoad(byte *key, int keyLength);
 
-// Timelocks related functions
+// Timelocks-related functions
 int setStorageLock(byte *key, int keyLen, long long timeLock);
 long long getStorageLock(byte *key, int keyLen);
 int isStorageLocked(byte *key, int keyLen);
 int clearStorageLock(byte *key, int keyLen);
+
+// Crypto-related functions
+int keccak256(byte *key, int keyLength, byte *result);
+int sha256(byte *key, int keyLength, byte *result);
 
 #endif
