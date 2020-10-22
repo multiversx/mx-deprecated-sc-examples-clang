@@ -1,13 +1,10 @@
-DENOMINATION="000000000000000000"
-PROXY="https://api.elrond.com"
-CHAIN="BoN"
-ALICE_PEM="~/wallet/alice.pem"
+ALICE="${USERS}/alice.pem"
 CONTRACT_ADDRESS="erd1YourContractHere"
 
 deploy() {
-    erdpy --verbose contract deploy ${CONTRACT_FOLDER} --recall-nonce --pem=${ALICE_PEM} --gas-limit=5000000 --proxy=${PROXY} --chain=${CHAIN}
+    erdpy --verbose contract deploy --project=${PROJECT} --recall-nonce --pem=${ALICE} --gas-limit=5000000
 }
 
 getUltimateAnswer() {
-    erdpy --verbose contract query ${CONTRACT_ADDRESS} --function="getUltimateAnswer" --proxy=${PROXY}
+    erdpy --verbose contract query ${CONTRACT_ADDRESS} --function="getUltimateAnswer"
 }

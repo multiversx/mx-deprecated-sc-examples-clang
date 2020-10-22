@@ -1,4 +1,3 @@
-import base64
 import logging
 from argparse import ArgumentParser
 
@@ -14,7 +13,8 @@ logger = logging.getLogger("examples")
 
 if __name__ == '__main__':
     parser = ArgumentParser()
-    parser.add_argument("--proxy", help="Testnet Proxy URL", default=config.get_proxy())
+    parser.add_argument("--proxy", help="Testnet Proxy URL",
+                        default=config.get_proxy())
     parser.add_argument("--contract", help="Existing contract address")
     parser.add_argument("--pem", help="User PEM file", required=True)
     args = parser.parse_args()
@@ -44,9 +44,9 @@ if __name__ == '__main__':
         contract = SmartContract(bytecode=bytecode)
 
         tx, address = environment.deploy_contract(
-            contract=contract, 
-            owner=user, 
-            arguments=[], 
+            contract=contract,
+            owner=user,
+            arguments=[],
             gas_price=config.DEFAULT_GAS_PRICE,
             gas_limit=5000000,
             value=None,
