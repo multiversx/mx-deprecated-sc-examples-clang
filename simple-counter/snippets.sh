@@ -1,6 +1,6 @@
 ALICE="${USERS}/alice.pem"
 ADDRESS=$(erdpy data load --key=address)
-TRANSACTION=$(erdpy data load --key=deployTransaction)
+DEPLOY_TRANSACTION=$(erdpy data load --key=deployTransaction)
 
 deploy() {
     erdpy --verbose contract deploy --project=${PROJECT} --recall-nonce --pem=${ALICE} --gas-limit=5000000 --send --outfile="deploy.json"
@@ -12,7 +12,7 @@ deploy() {
 }
 
 checkDeployment() {
-    erdpy tx get --hash=$TRANSACTION --omit-fields="['data', 'signature']"
+    erdpy tx get --hash=$DEPLOY_TRANSACTION --omit-fields="['data', 'signature']"
     erdpy account get --address=$ADDRESS --omit-fields="['code']"
 }
 
