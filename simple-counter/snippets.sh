@@ -12,7 +12,6 @@ deploy() {
     erdpy data store --key=deployTransaction --value=${TRANSACTION}
 
     echo ""
-    echo "Simulated transaction: ${TRANSACTION}"
     echo "Smart contract address: ${ADDRESS}"
 }
 
