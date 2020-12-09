@@ -36,5 +36,5 @@ checkDeployment() {
 }
 
 getUltimateAnswer() {
-    erdpy --verbose contract query ${CONTRACT_ADDRESS} --function="getUltimateAnswer"
+    erdpy --verbose contract query ${ADDRESS} --function="getUltimateAnswer"
 }

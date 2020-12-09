@@ -13,9 +13,9 @@ logger = logging.getLogger("examples")
 
 if __name__ == '__main__':
     parser = ArgumentParser()
-    parser.add_argument("--proxy", help="Testnet Proxy URL", required=True)
+    parser.add_argument("--proxy", help="Proxy URL", required=True)
     parser.add_argument("--contract", help="Existing contract address")
-    parser.add_argument("--pem", help="User PEM file", required=True)
+    parser.add_argument("--pem", help="PEM file", required=True)
     args = parser.parse_args()
 
     logging.basicConfig(level=logging.DEBUG)
