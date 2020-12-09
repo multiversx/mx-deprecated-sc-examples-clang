@@ -1,17 +1,7 @@
 
-# C smart contracts 
-*.ll
-*.o
-*.wasm
-*.hex
-*.hex.arwen
-
-# Rust smart contracts
-*/target/
-
-# Variables config
-variables.json
-watched.json
-watched.testnet.json
-
 **/node_modules
+
+**/output/**
+**/testnet/**
+**/erdpy.data-storage.json
+**/*.interaction.json

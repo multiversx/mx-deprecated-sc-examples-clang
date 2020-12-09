@@ -1,7 +1,7 @@
 import logging
 from argparse import ArgumentParser
+from pathlib import Path
 
-from erdpy import config
 from erdpy.accounts import Account
 from erdpy.contracts import SmartContract
 from erdpy.environments import TestnetEnvironment
@@ -13,24 +13,24 @@ logger = logging.getLogger("examples")
 
 if __name__ == '__main__':
     parser = ArgumentParser()
-    parser.add_argument("--proxy", help="Testnet Proxy URL",
-                        default=config.get_proxy())
+    parser.add_argument("--proxy", help="Testnet Proxy URL", required=True)
     parser.add_argument("--contract", help="Existing contract address")
     parser.add_argument("--pem", help="User PEM file", required=True)
     args = parser.parse_args()
 
     logging.basicConfig(level=logging.DEBUG)
 
-    # Create a project object
-    project = ProjectClang("../")
+    proxy = ElrondProxy(args.proxy)
+    network = proxy.get_network_config()
+    chain = network.chain_id
+    gas_price = network.min_gas_price
+    tx_version = network.min_tx_version
 
-    # We can inspect the bytecode like this:
-    bytecode = project.get_bytecode()
-    logger.info("Bytecode: %s", bytecode)
-
-    # Now, we create a environment which intermediates deployment and execution
     environment = TestnetEnvironment(args.proxy)
     user = Account(pem_file=args.pem)
+
+    project = ProjectClang(Path(__file__).parent.parent)
+    bytecode = project.get_bytecode()
 
     # We initialize the smart contract with an actual address if IF was previously deployed,
     # so that we can start to interact with it ("query_flow")
@@ -47,11 +47,11 @@ if __name__ == '__main__':
             contract=contract,
             owner=user,
             arguments=[],
-            gas_price=config.DEFAULT_GAS_PRICE,
+            gas_price=gas_price,
             gas_limit=5000000,
             value=None,
-            chain=config.get_chain_id(),
-            version=config.get_tx_version()
+            chain=chain,
+            version=tx_version
         )
 
         logger.info("Tx hash: %s", tx)
@@ -72,11 +72,11 @@ if __name__ == '__main__':
             caller=user,
             function=function,
             arguments=[],
-            gas_price=config.DEFAULT_GAS_PRICE,
+            gas_price=gas_price,
             gas_limit=500000,
             value=None,
-            chain=config.get_chain_id(),
-            version=config.get_tx_version()
+            chain=chain,
+            version=tx_version
         )
 
         logger.info("Tx hash: %s", tx)
