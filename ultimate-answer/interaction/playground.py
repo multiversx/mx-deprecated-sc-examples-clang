@@ -42,7 +42,6 @@ if __name__ == '__main__':
 
         # For deploy, we initialize the smart contract with the compiled bytecode
         contract = SmartContract(bytecode=bytecode)
-        user.sync_nonce(ElrondProxy(args.proxy))
 
         tx, address = environment.deploy_contract(
             contract=contract,
@@ -63,6 +62,8 @@ if __name__ == '__main__':
 
         answer = environment.query_contract(contract, "getUltimateAnswer")
         logger.info(f"Answer: {answer}")
+
+    user.sync_nonce(ElrondProxy(args.proxy))
 
     while True:
         print("Let's run a flow.")

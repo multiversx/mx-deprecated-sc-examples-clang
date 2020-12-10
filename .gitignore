@@ -1,6 +1,5 @@
-
+# Elrond IDE
 **/node_modules
-
 **/output/**
 **/testnet/**
 **/erdpy.data-storage.json
