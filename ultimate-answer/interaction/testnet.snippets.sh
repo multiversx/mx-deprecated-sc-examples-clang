@@ -3,9 +3,9 @@ ADDRESS=$(erdpy data load --key=address-testnet)
 DEPLOY_TRANSACTION=$(erdpy data load --key=deployTransaction-testnet)
 
 deploy() {
-    erdpy --verbose contract deploy --project=${PROJECT} --recall-nonce --pem=${ALICE} --gas-limit=5000000 --send --outfile="deploy-testnet.interaction.json"
+    erdpy --verbose contract deploy --project=${PROJECT} --recall-nonce --pem=${ALICE} --gas-limit=5000000 --send --outfile="deploy-testnet.interaction.json" --proxy=${PROXY} --chain=T
 
-    TRANSACTION=$(erdpy data parse --file="deploy-testnet.interaction.json" --expression="data['result']['hash']")
+    TRANSACTION=$(erdpy data parse --file="deploy-testnet.interaction.json" --expression="data['emitted_tx']['hash']")
     ADDRESS=$(erdpy data parse --file="deploy-testnet.interaction.json" --expression="data['emitted_tx']['address']")
 
     erdpy data store --key=address-testnet --value=${ADDRESS}
@@ -16,10 +16,10 @@ deploy() {
 }
 
 checkDeployment() {
-    erdpy tx get --hash=$DEPLOY_TRANSACTION --omit-fields="['data', 'signature']"
-    erdpy account get --address=$ADDRESS --omit-fields="['code']"
+    erdpy tx get --hash=$DEPLOY_TRANSACTION --omit-fields="['data', 'signature']" --proxy=${PROXY}
+    erdpy account get --address=$ADDRESS --omit-fields="['code']" --proxy=${PROXY}
 }
 
 getUltimateAnswer() {
-    erdpy --verbose contract query ${ADDRESS} --function="getUltimateAnswer"
+    erdpy --verbose contract query ${ADDRESS} --function="getUltimateAnswer" --proxy=${PROXY}
 }
